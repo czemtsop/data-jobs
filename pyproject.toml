@@ -1,0 +1,13 @@
+[project]
+name = "data-jobs"
+version = "0.1.0"
+description = "Retrieves job postings from job boards and analyses them"
+requires-python = ">=3.12"
+dependencies = [
+    "beautifulsoup4>=4.13.4",
+    "duckdb>=1.2.2",
+    "matplotlib>=3.10.3",
+    "pandas>=2.2.3",
+    "requests>=2.32.3",
+    "wordcloud>=1.9.4",
+]

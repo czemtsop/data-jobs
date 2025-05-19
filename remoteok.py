@@ -56,42 +56,6 @@ def fetch_remoteok_jobs_from_api():
         return None
 
 
-def fetch_jobicy_jobs_from_api():
-    """
-    Fetches job listings from the Jobicy API.
-
-    The Jobicy API returns a list where the first element contains API information,
-    so we skip it to get to the actual job listings.
-
-    Returns:
-        data: A list of job dictionaries if successful, None otherwise.
-    """
-    api_url = "https://jobicy.com/api/v2/remote-jobs"
-    print(f"Attempting to fetch data from: {api_url}")
-    try:
-        response = requests.get(api_url, timeout=10)  # Added timeout for robustness
-        response.raise_for_status()  # Raises an HTTPError for bad responses (4XX or 5XX)
-
-        data = response.json()
-
-        # The RemoteOK API returns a list. The first item is contains API info.
-        # Actual job listings are in the second item.
-        if isinstance(data, list) and len(data) > 0:
-            if data[0].get("friendlyNotice") is not None:
-                print(f"Skipping the first element (meta-data/legal): {data[0].get('friendlyNotice')}")
-                return data[1].get('data-jobs')  # Return the job list
-            else:
-                # If the first element doesn't look like metadata, perhaps the API structure changed.
-                # For now, we'll assume it's all job data.
-                print("First element does not appear to be metadata. Processing all elements as data-jobs.")
-                return data
-        elif isinstance(data, list) and len(data) == 0:
-            print("API returned an empty list of data-jobs.")
-            return []
-        else:
-            print(f"Unexpected API response format. Expected a list, got {type(data)}.")
-            return None
-
     except requests.exceptions.Timeout:
         print(f"Error: Request to {api_url} timed out.")
         return None
@@ -196,7 +160,6 @@ def main():
 
     # Step 1: Fetch job data from the API
     raw_job_data = fetch_remoteok_jobs_from_api()
-    raw_job_data2 = fetch_jobicy_jobs_from_api()
 
     if raw_job_data is None:
         print("Failed to fetch job data from remoteok. Exiting pipeline.")

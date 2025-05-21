@@ -1,4 +1,4 @@
-<h1 style="text-align: center;"> Unveiling the Data Career Landscape: An Analysis of Online Job Postings </h1>
+<h1 style="text-align: center;"> An Analysis of Online Data-career Job Postings </h1>
 
 <h2 style="text-align: center;"> 1. 📚️ Introduction </h2>
 

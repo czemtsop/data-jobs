@@ -1,4 +1,3 @@
-from collections import Counter
 from datetime import date
 
 import nltk
@@ -7,6 +6,7 @@ import pandas as pd  # For data manipulation and creating DataFrames
 import requests  # For making HTTP requests to the API
 from bs4 import BeautifulSoup as bs
 from matplotlib import pyplot as plt
+from collections import Counter
 
 nltk.download('stopwords')
 nltk.download('punkt')
@@ -16,12 +16,15 @@ from nltk.tokenize import word_tokenize
 from os import path
 from PIL import Image
 from wordcloud import WordCloud
+from dotenv import load_dotenv
+import os
 
+# Define the stopwords for text processing
 stopwords = set(STOPWORDS.words('english'))  # Load the English stopwords from NLTK
 stopwords.update(['across', 'help', 'skills', 'will'])  # Add custom stopwords
 
-
-# Define the stopwords for text processing
+load_dotenv(dotenv_path=os.path.join('.venv', '.env'))
+JOOBLE_API_KEY = os.getenv('JOOBLE_API_KEY')
 
 
 def fetch_jobs_from_api(sites):
@@ -36,7 +39,8 @@ def fetch_jobs_from_api(sites):
     """
     api_urls = {
         "remoteok": "https://remoteok.com/api",
-        'jobicy': "https://jobicy.com/api/v2/remote-jobs"
+        'jobicy': "https://jobicy.com/api/v2/remote-jobs",
+        'jooble': "https://jooble.org/api/",
     }
     keywords = ['analy', 'data', 'machine learning', 'intelligence']
     df_columns = [
@@ -150,7 +154,7 @@ def parse_remoteok_jobs_to_structured_df(data):
 
     # Define the columns we are interested in.
     desired_columns = [
-        'id', 'url', 'company', 'position', 'tags', 'location', 'salary_min', 'salary_max'
+        'id', 'url', 'company', 'position', 'tags', 'location', 'description', 'salary_min', 'salary_max'
     ]
     # Define the keywords to look for in job titles
     keywords = 'analy|data|machine learning|intelligence'
@@ -180,7 +184,7 @@ def parse_remoteok_jobs_to_structured_df(data):
 
     # Clean up HTML and robot message from description
     if 'description' in df.columns:
-        df_selected['description'] = df['description'].apply(
+        df_selected['description'] = df_selected['description'].apply(
             lambda html: bs(html, 'html.parser').get_text()
         )
         df_selected['description'] = df_selected['description'].str.replace(r'Please mention the word(.)*', "",
@@ -302,14 +306,6 @@ def generate_wordcloud(text, mask_image_path=None):
 def analyze_job_data(job_postings):
     """Performs basic analysis on the fetched job listings."""
 
-    # Generate word cloud using tags on job postings
-    tags = ", ".join(job_postings.tags).lower()
-
-    wordcloud = generate_wordcloud(tags)
-    plt.imshow(wordcloud, interpolation='bilinear')
-    plt.axis("off")
-    plt.show()
-
     all_descriptions = ", ".join(job_postings.description).lower()
     tokens = word_tokenize(all_descriptions)
     keywords = [word for word in tokens if word.isalpha() and word not in stopwords]
@@ -319,6 +315,41 @@ def analyze_job_data(job_postings):
     for keyword, count in common_keywords:
         print(f"- {keyword}: {count}")
 
+    # Generate word cloud using tags on job postings
+    tags = ", ".join(job_postings.tags).lower()
+
+    wordcloud = generate_wordcloud(tags)
+    plt.imshow(wordcloud, interpolation='bilinear')
+    plt.axis("off")
+    plt.show()
+
+    # Analyze salary trends across locations
+    analyze_salary_trends_by_location(job_postings)
+
+
+def analyze_salary_trends_by_location(df):
+    """
+    Analyzes average salary trends across locations using the jobs_df DataFrame.
+    Plots average minimum and maximum salaries for each location with available data.
+    """
+    # Filter out rows with missing or zero salary and location
+    salary_df = df[(df['salaryMin'] > 0) & (df['salaryMax'] > 0) & (df['location'].str.strip() != '')].copy()
+    if salary_df.empty:
+        print("No salary/location data available for analysis.")
+        return
+
+    # Group by location and calculate average salaries
+    grouped = salary_df.groupby('location')[['salaryMin', 'salaryMax']].mean().sort_values('salaryMax', ascending=False)
+
+    # Plotting
+    grouped[['salaryMin', 'salaryMax']].plot(kind='bar', figsize=(12, 6))
+    plt.title('Average Salary Ranges by Location')
+    plt.ylabel('Salary')
+    plt.xlabel('Location')
+    plt.xticks(rotation=45, ha='right')
+    plt.tight_layout()
+    plt.show()
+
 
 def main():
     """
@@ -327,17 +358,17 @@ def main():
     print("--- Starting RemoteOK Job Data Pipeline ---")
 
     # Step 1: Fetch parsed and transformed job data
-    jobs_dataframe = fetch_jobs_from_api(['remoteok', 'jobicy'])
+    jobs_df = fetch_jobs_from_api(['remoteok', 'jobicy'])
 
-    if jobs_dataframe.empty:
+    if jobs_df.empty:
         print("DataFrame creation failed or resulted in an empty DataFrame. Exiting pipeline.")
         return
 
     print("\n--- DataFrame Information ---")
-    jobs_dataframe.info()
+    jobs_df.info()
 
     # Generate word cloud using tags on job postings
-    analyze_job_data(jobs_dataframe)
+    analyze_job_data(jobs_df)
 
 
 if __name__ == "__main__":

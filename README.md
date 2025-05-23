@@ -13,12 +13,13 @@ This project analyzes online job postings related to data roles (such as Data Sc
 
 ### 1.2 🎯️ Outcomes
 
-- Enhanced understanding of workforce trends and employee behavior.
-- Data-driven decision-making for talent management and retention.
-- Optimization of HR processes and resource allocation.
-- Support for strategic planning and organizational development.
-- Identification of skill gaps and training needs.
-- Increased efficiency in recruitment and onboarding processes.
+- Insights into regional demand for specific data roles.
+- Benchmarking of salary expectations across industries.
+- Identification of emerging tools and technologies in job postings.
+- Data-driven recommendations for job seekers and educators.
+- Visualization of hiring trends over time.
+- Support for policy-making and curriculum development.
+- Enhanced datasets for further research and analysis.
 
 ### 1.3 Installation
 
@@ -29,47 +30,37 @@ This project analyzes online job postings related to data roles (such as Data Sc
     ```
 2. Install dependencies:
     ```bash
-    pip install -r requirements.txt
+    uv sync 
     ```
 
 ### 1.4 Usage
 
-Run the main analysis script:
+There are two ways to use this project:
+
+1. Use the [analyze_jobs](analyze_jobs.ipynb) jupyter notebook
+
+2. Run the main analysis script:
 ```bash
 python analyze_jobs.py
 ```
 
-### 1.5 Project Structure
+### 1.5 ℹ️ Project Structure
 
-- `scraper/` — modules for scraping job postings
-- `analysis/` — data cleaning and analysis scripts
-- `visualization/` — scripts for generating charts and reports
-- `data/` — sample datasets
+- `scraper/` — modules for scraping and cleaning job postings
+- `analysis/` — scripts for data analysis and generating charts/reports
 
-### 1.6 Requirements
+### 1.6 License
 
-- Python 3.12+
-- pandas, requests, beautifulsoup4, matplotlib
+This project is licensed under the GNU Public license.
 
-### 1.7 License
+<h2 style="text-align: center;">2. 💡️ Analysis and Insights </h2>
 
-This project is licensed under the MIT License.
- 
-<h2 style="text-align: center;"> 2. ℹ️ The Data </h2>
-
-### 2.1 Requirements Analysis
+### 2.1 
 
 
-<h2 style="text-align: center;"> 3. 🤔️ Solution </h2>
 
-### 3.1 Strategy
+<h2 style="text-align: center;"> 3. 🤔️ Future Work </h2>
 
-**Generally, to minimize compute operations and memory usage, we perform joins and add columns to our queries only when needed.**
-
-
-### 3.2 Code
-
-The complete SQL code used in this step can be found in the script [here](people.sql)
-
-
-<h2 style="text-align: center;"> 4. 💡️ Final Output </h2>
+- Add modules for scraping other online job boards.
+- Add other types of analysis and visualisations for gleaning insights from the data
+- Store data in a database for analysis of trends over time

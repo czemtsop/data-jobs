@@ -49,7 +49,7 @@ This project dives into the wild world of data job postings, scraping and analyz
 ├── jobicy_scraper.py      # Jobicy job board scraper implementation.
 └── remoteok_scraper.py    # RemoteOK job board scraper implementation.
 
-── analyze_jobs.ipynb		# Interactive analysis playground
+── analyze_jobs.ipynb      # Interactive analysis playground
 ```
 
 ### 2.2 Key Technologies

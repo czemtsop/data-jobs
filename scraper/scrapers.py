@@ -4,7 +4,7 @@ import nltk
 import numpy as np
 import pandas as pd  # For data manipulation and creating DataFrames
 import requests  # For making HTTP requests to the API
-from bs4 import BeautifulSoup as bs
+from bs4 import BeautifulSoup
 from matplotlib import pyplot as plt
 from collections import Counter
 
@@ -23,7 +23,7 @@ import os
 stopwords = set(STOPWORDS.words('english'))  # Load the English stopwords from NLTK
 stopwords.update(['across', 'help', 'skills', 'will'])  # Add custom stopwords
 
-load_dotenv(dotenv_path=os.path.join('.venv', '.env'))
+load_dotenv(dotenv_path=os.path.join('../.venv', '.env'))
 JOOBLE_API_KEY = os.getenv('JOOBLE_API_KEY')
 
 
@@ -185,7 +185,7 @@ def parse_remoteok_jobs_to_structured_df(data):
     # Clean up HTML and robot message from description
     if 'description' in df.columns:
         df_selected['description'] = df_selected['description'].apply(
-            lambda html: bs(html, 'html.parser').get_text()
+            lambda html: BeautifulSoup(html, 'html.parser').get_text()
         )
         df_selected['description'] = df_selected['description'].str.replace(r'Please mention the word(.)*', "",
                                                                             regex=True)
@@ -241,7 +241,7 @@ def parse_jobicy_jobs_to_structured_df(data):
 
     # Convert 'pubDate' to datetime objects, coercing errors to NaT (Not a Time)
     df_selected['pubDate'] = df_selected['pubDate'].apply(
-        lambda date: pd.to_datetime(date[:10], format='%Y-%m-%d', errors='coerce')
+        lambda formatted_date: pd.to_datetime(formatted_date[:10], format='%Y-%m-%d', errors='coerce')
     )
 
     # Replace 'Any' in 'jobLevel' with an empty string for uniformity with other job boards.
@@ -259,7 +259,7 @@ def parse_jobicy_jobs_to_structured_df(data):
     )
 
     # Clean up HTML from jobDescription
-    df_selected['jobDescription'] = df['jobDescription'].apply(lambda html: bs(html, 'html.parser').get_text())
+    df_selected['jobDescription'] = df['jobDescription'].apply(lambda html: BeautifulSoup(html, 'html.parser').get_text())
 
     df_selected.rename(columns={
         'companyName': 'company',

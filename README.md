@@ -178,6 +178,12 @@ visualization:
 - **Network Analysis**: Company hiring patterns and employee movement
 - **Crowdsourced Insights**: Community-contributed salary and interview data
 
+### 7.2 Phase 3: Automation and AI Revolution
+
+- **Smart web scraping**: AI-powered web scraping for job boards with no APIs
+- **Daily scraping**:  Set up cron jobs for regular data collection
+- **Machine Learning Enhancements**: Job description similarity clustering, salary prediction models, skills demand forecasting
+
 <h2 style="text-align: center;"> 8. 🤝 Contributing </h2>
 
 We love contributors! Whether you're fixing typos, adding features, or sharing insights:

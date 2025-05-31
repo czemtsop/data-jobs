@@ -1,0 +1,10 @@
+{
+  "total_jobs": 44,
+  "unique_companies": 41,
+  "unique_locations": 21,
+  "jobs_with_salary": 33,
+  "date_range": {
+    "earliest": null,
+    "latest": null
+  }
+}

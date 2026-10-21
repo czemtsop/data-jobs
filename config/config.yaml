@@ -1,58 +1,55 @@
-# Data Jobs Analysis Configuration
+# Canadian Analyst Job Market — pipeline configuration
 
-scrapers:
-  remoteok:
-    enabled: true
-    url: "https://remoteok.com/api"
-    timeout: 10
-    rate_limit_delay: 2
-  
-  jobicy:
-    enabled: true
-    url: "https://jobicy.com/api/v2/remote-jobs"
-    timeout: 10
-    rate_limit_delay: 2
-    
-  jooble:
-    enabled: false  # Requires API key setup
-    url: "https://jooble.org/api/"
-    timeout: 10
+source:
+  # Drop the monthly Job Bank open-data CSVs (English files) here.
+  # https://open.canada.ca/data/en/dataset/ea639e28-c0fc-48bf-b5dd-b8899bd43072
+  raw_dir: data/raw
+  file_glob: "*.csv"
 
-# Job filtering criteria
-filters:
-  keywords: ['analy', 'data', 'machine learning', 'intelligence']
-  job_titles: ["Data Scientist", "Data Engineer", "Data Analyst", "Machine Learning Engineer"]
-  locations: ["Remote", "Canada"]
-  experience_levels: ["Entry", "Mid", "Senior", "Executive"]
-
-# Text processing settings
-text_processing:
-  custom_stopwords: ['across', 'help', 'skills', 'will', 'job', 'work', 'team', 'company']
-  max_words_wordcloud: 30
-  top_keywords_count: 20
-
-# Analysis settings
-analysis:
-  salary_outlier_threshold: 3
-  minimum_job_count: 10
-  trend_analysis_days: 90
-
-# Output settings
 output:
-  data_dir: "data"
-  raw_dir: "data/raw"
-  processed_dir: "data/processed"
-  reports_dir: "data/outputs"
-  
-# Visualization settings
-visualization:
-  wordcloud:
-    width: 800
-    height: 400
-    background_color: 'white'
-    contour_color: 'steelblue'
-    contour_width: 1
-  
-  charts:
-    figsize: [12, 6]
-    style: 'seaborn-v0_8'
+  model_dir: data/model          # star-schema CSVs that Power BI loads
+  findings_file: data/model/findings.json
+
+# A posting is "in scope" when its title matches an include pattern and
+# no exclude pattern. Patterns are case-insensitive regular expressions.
+filters:
+  title_include:
+    - '\banalyst'
+    - '\banalytics\b'
+    - '\banalyste'                # French titles posted in the English file
+  title_exclude:
+    - 'psychoanalyst'
+    - 'behaviou?r analyst'         # clinical ABA roles, not business analysis
+    - 'analyste? du comportement'
+
+# Role families, checked in order; first match wins. Anything else = "Other analyst".
+role_families:
+  - name: Data & BI
+    patterns: ['\bdata\b', '\bbi\b', 'business intelligence', 'reporting', 'analytics', 'insights?\b', 'database', '\bsql\b', 'données']
+  - name: Financial
+    patterns: ['financ', 'fp&a', 'investment', 'credit', '\brisk\b', 'budget', 'pricing', 'treasury', 'cost\b', 'actuar']
+  - name: Business & Systems
+    patterns: ['business analyst', 'business systems', 'systems? analyst', '\bit analyst', 'process', 'functional', '\berp\b', '\bsap\b', 'affaires', 'informatique']
+  - name: Marketing & Sales
+    patterns: ['marketing', 'sales', 'market research', 'digital', 'e-?commerce', 'customer']
+  - name: Operations & Supply Chain
+    patterns: ['supply', 'logistic', 'inventory', 'operations?\b', 'procurement', 'demand', 'planning']
+  - name: Lab & Quality
+    patterns: ['laborator', '\blab\b', 'chemi', 'quality', '\bqc\b', '\bqa\b', 'assay']
+
+seniority:                       # checked in order; default = Mid
+  - name: Manager
+    patterns: ['\bmanager\b', '\bdirector\b', '\bhead of\b', 'gestionnaire', 'directeur']
+  - name: Senior
+    patterns: ['\bsenior\b', '\bsr\.?\b', '\blead\b', 'principal', '\bstaff\b']   # "principal" also catches French "analyste principal"
+  - name: Junior
+    patterns: ['\bjunior\b', '\bjr\.?\b', '\bentry\b', '\bassociate\b', '\bintern\b', 'co-?op', '\bstagiaire\b']
+
+salary:
+  default_hours_per_week: 37.5   # used when an hourly posting has no hours
+  weeks_per_year: 52
+  annual_floor: 25000            # annualized values outside this range are treated as unusable
+  annual_ceiling: 400000
+
+findings:
+  min_group_size: 30             # a province / family needs this many salaried postings to be ranked

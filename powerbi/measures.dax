@@ -1,0 +1,65 @@
+// Measures for the Canadian Analyst Job Market report.
+// Create a table named _Measures (Enter data > one empty column) and add each block
+// below with Modeling > New measure. Table names match the CSVs in data/model/.
+
+Postings =
+COUNTROWS ( fact_postings )
+
+Vacancies =
+SUM ( fact_postings[vacancies] )
+
+Salaried Postings =
+CALCULATE ( [Postings], fact_postings[has_salary] = TRUE () )
+
+Salary Coverage % =
+DIVIDE ( [Salaried Postings], [Postings] )
+
+// Medians, not means: advertised salaries are right-skewed.
+Median Salary =
+MEDIAN ( fact_postings[salary_mid_annual] )
+
+Salary P25 =
+PERCENTILEX.INC (
+    FILTER ( fact_postings, NOT ISBLANK ( fact_postings[salary_mid_annual] ) ),
+    fact_postings[salary_mid_annual], 0.25
+)
+
+Salary P75 =
+PERCENTILEX.INC (
+    FILTER ( fact_postings, NOT ISBLANK ( fact_postings[salary_mid_annual] ) ),
+    fact_postings[salary_mid_annual], 0.75
+)
+
+// Same rule as the Python findings: don't show a median built on fewer than 30 salaries.
+Median Salary (reliable) =
+IF ( [Salaried Postings] >= 30, [Median Salary] )
+
+Median Salary – Canada =
+CALCULATE ( [Median Salary], REMOVEFILTERS ( dim_province ) )
+
+Pay vs Canada % =
+DIVIDE ( [Median Salary (reliable)], [Median Salary – Canada] ) - 1
+
+Share of Postings =
+DIVIDE ( [Postings], CALCULATE ( [Postings], ALLSELECTED () ) )
+
+// Requires dim_date marked as the date table (Table tools > Mark as date table > date).
+Postings Prev Month =
+CALCULATE ( [Postings], DATEADD ( dim_date[date], -1, MONTH ) )
+
+Postings MoM % =
+DIVIDE ( [Postings] - [Postings Prev Month], [Postings Prev Month] )
+
+Remote Share (of stated) =
+DIVIDE (
+    CALCULATE ( [Postings], fact_postings[work_arrangement] = "Remote" ),
+    CALCULATE ( [Postings], fact_postings[work_arrangement] <> "Not stated" )
+)
+
+// Dynamic subtitle so the screenshot always states its own scope.
+Report Scope =
+VAR firstD = MIN ( fact_postings[posted_date] )
+VAR lastD  = MAX ( fact_postings[posted_date] )
+RETURN
+    FORMAT ( [Postings], "#,0" ) & " analyst postings on Job Bank · "
+        & FORMAT ( firstD, "mmm d, yyyy" ) & " – " & FORMAT ( lastD, "mmm d, yyyy" )

@@ -50,11 +50,8 @@ CALCULATE ( [Postings], DATEADD ( dim_date[date], -1, MONTH ) )
 Postings MoM % =
 DIVIDE ( [Postings] - [Postings Prev Month], [Postings Prev Month] )
 
-Remote Share (of stated) =
-DIVIDE (
-    CALCULATE ( [Postings], fact_postings[work_arrangement] = "Remote" ),
-    CALCULATE ( [Postings], fact_postings[work_arrangement] <> "Not stated" )
-)
+External Board Share =
+DIVIDE ( CALCULATE ( [Postings], fact_postings[posting_source] = "External job board" ), [Postings] )
 
 // Dynamic subtitle so the screenshot always states its own scope.
 Report Scope =

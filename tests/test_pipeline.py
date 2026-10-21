@@ -19,18 +19,25 @@ ROWS = [
     ("4", "Psychoanalyst", "Ontario", "Ottawa", "2026-09-05", "100000", "120000", "Year", "", "1"),
     ("5", "Software Developer", "Ontario", "Toronto", "2026-09-05", "90000", "100000", "Year", "", "1"),
     ("6", "Laboratory Analyst", "Saskatchewan", "Saskatoon", "2026-09-06", "", "", "", "", "1"),
-    ("7", "BI Analyst (Remote)", "British Columbia", "Vancouver", "2026-09-07", "1800", "2000", "Bi-weekly", "", "1"),
-    ("7", "BI Analyst (Remote)", "British Columbia", "Vancouver", "2026-09-07", "1800", "2000", "Bi-weekly", "", "1"),
+    ("7", "BI Analyst", "British Columbia", "Vancouver", "2026-09-07", "1800", "2000", "Bi-weekly", "", "1"),
+    ("7", "BI Analyst", "British Columbia", "Vancouver", "2026-09-07", "1800", "2000", "Bi-weekly", "", "1"),
     ("8", "Data Analyst", "Texas", "Austin", "2026-09-08", "70000", "80000", "Year", "", "1"),
 ]
-HEADERS = ["Job Posting ID", "Job Title", "Province/Territory", "City", "First Posting Date",
-           "Salary Minimum", "Salary Maximum", "Salary Per", "Work Hours", "Vacancy Count"]
+HEADERS = ["WIC Job Location Snapshot ID", "Job Title", "Province/Territory", "City", "First Posting Date",
+           "Salary Minimum", "Salary Maximum", "Salary Per", "Hours Minimum", "Vacancy Count"]
 
 
 @pytest.fixture
 def raw(tmp_path):
     p = tmp_path / "sample.csv"
-    pd.DataFrame(ROWS, columns=HEADERS).to_csv(p, index=False, encoding="utf-16", sep="\t")
+    df = pd.DataFrame(ROWS, columns=HEADERS)
+    df["Hours Maximum"] = df["Hours Minimum"]
+    df["Hours Per"] = "Week"
+    # external posting whose auto-assigned standard title is wrong: employer title must win
+    df["Original Job Title"] = ""
+    df.loc[len(df)] = ["9", "information technology (IT) analyst", "Ontario", "Toronto", "2026-09-09",
+                       "60000", "60000", "Year", "", "1", "", "Week", "Business Strategy Specialist"]
+    df.to_csv(p, index=False, encoding="utf-16", sep="\t")
     return load.load_month(p)
 
 
@@ -40,7 +47,7 @@ def test_headers_map(raw):
 
 def test_filter_dedupe_and_derive(raw):
     df = transform.transform(raw, CFG).set_index("posting_id")
-    assert set(df.index) == {"1", "2", "3", "6", "7"}           # psychoanalyst, developer, Texas, dupe gone
+    assert set(df.index) == {"1", "2", "3", "6", "7"}   # psychoanalyst, developer, Texas, dupe, mis-coded title gone
     assert df.loc["1", "seniority"] == "Senior" and df.loc["2", "seniority"] == "Junior"
     assert df.loc["1", "role_family"] == "Data & BI"
     assert df.loc["2", "role_family"] == "Financial"
@@ -49,7 +56,6 @@ def test_filter_dedupe_and_derive(raw):
     assert df.loc["2", "salary_mid_annual"] == pytest.approx(30 * 40 * 52)
     assert df.loc["3", "salary_mid_annual"] == pytest.approx(7000 * 12)
     assert df.loc["7", "salary_mid_annual"] == pytest.approx(1900 * 26)
-    assert df.loc["7", "work_arrangement"] == "Remote"
     assert not df.loc["6", "has_salary"]
 
 

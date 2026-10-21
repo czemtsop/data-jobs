@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+import pandas as pd
 import yaml
 
 from . import findings, load, model, transform
@@ -38,7 +39,9 @@ def main() -> None:
     paths = model.build_model(df, ROOT / cfg["output"]["model_dir"])
     for name, p in paths.items():
         print(f"  wrote {p.relative_to(ROOT)}")
-    f = findings.compute(df, cfg["findings"]["min_group_size"])
+    posted = pd.to_datetime(raw["posted_date"], errors="coerce", format="mixed").dt.to_period("M")
+    all_monthly = {str(k): int(v) for k, v in posted.value_counts().sort_index().items()}
+    f = findings.compute(df, cfg["findings"]["min_group_size"], all_monthly)
     md = findings.write(f, ROOT / cfg["output"]["findings_file"], None if args.no_readme else ROOT / "README.md")
     print("\nFindings:\n" + md)
 

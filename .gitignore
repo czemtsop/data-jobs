@@ -6,10 +6,6 @@ __pycache__/
 .ipynb_checkpoints/
 .pytest_cache/
 
-# Raw Job Bank files are large; download them (see README)
-data/raw/*
-!data/raw/.gitkeep
-
 # Power BI temp/cache
 *.pbix.bak
 .pbi/

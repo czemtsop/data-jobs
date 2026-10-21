@@ -10,7 +10,7 @@ from .transform import PROVINCES
 
 FACT_COLUMNS = [
     "posting_id", "posted_date", "province_code", "city", "title", "role_family", "seniority",
-    "noc_code", "work_arrangement", "employment_type", "employment_term", "vacancies",
+    "noc_code", "noc_name", "posting_source", "economic_region", "hours_per_week", "employment_type", "employment_term", "vacancies",
     "salary_min_annual", "salary_max_annual", "salary_mid_annual", "salary_period", "has_salary",
     "source_file",
 ]
@@ -47,6 +47,6 @@ def build_model(df: pd.DataFrame, model_dir: Path) -> dict[str, Path]:
     paths = {}
     for name, table in tables.items():
         p = model_dir / f"{name}.csv"
-        table.to_csv(p, index=False, date_format="%Y-%m-%d")
+        table.to_csv(p, index=False, date_format="%Y-%m-%d", encoding="utf-8-sig")  # BOM so Power BI reads accents
         paths[name] = p
     return paths

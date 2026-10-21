@@ -48,7 +48,7 @@ Create a `_Measures` table and add the measures in [`measures.dax`](measures.dax
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
 │ Title + [Report Scope] subtitle                     Slicers: Month ▾   │
-│                                                     Province ▾ Family ▾│
+│                                         Province ▾ Family ▾ Source ▾  │
 ├──────────────┬──────────────┬──────────────┬───────────────────────────┤
 │ Postings     │ Vacancies    │ Median salary│ Salary coverage %         │
 ├──────────────┴──────────────┼──────────────┴───────────────────────────┤
@@ -69,6 +69,7 @@ Visual notes:
 - **Pay by role family** — clustered bar of `[Median Salary (reliable)]`; Analytics pane → error bars with `[Salary P25]` / `[Salary P75]` as lower/upper bounds. Families under 30 salaried postings show blank by design.
 - **Seniority** — column chart, axis `dim_seniority[seniority]`, value `[Median Salary (reliable)]`.
 - **Trend** — line chart, axis `dim_date[week_start]`, value `[Postings]`. One axis only.
+- **Source slicer** — `fact_postings[posting_source]` (Job Bank direct vs External job board), so viewers can check findings hold for both.
 - Keep gridlines dotted, no data labels on every point, legend off for single-series visuals.
 
 ## 6. Export the README image

@@ -69,8 +69,7 @@ def _period(raw: pd.Series) -> pd.Series:
 def annualize(df: pd.DataFrame, cfg: dict) -> pd.DataFrame:
     s = cfg["salary"]
     period = _period(df["salary_per"])
-    hours = _to_number(df["hours_per_week"]).where(lambda h: h.between(5, 80))
-    hours = hours.fillna(s["default_hours_per_week"])
+    hours = weekly_hours(df).fillna(s["default_hours_per_week"])
     mult = period.map(PERIOD_MULTIPLIER).astype("float")
     mult = mult.where(period != "hour", hours * s["weeks_per_year"])
     out = pd.DataFrame(index=df.index)
@@ -85,18 +84,26 @@ def annualize(df: pd.DataFrame, cfg: dict) -> pd.DataFrame:
     return out
 
 
-def work_arrangement(df: pd.DataFrame) -> pd.Series:
-    text = (df["work_arrangement"].fillna("") + " " + df["city"].fillna("") + " " + df["title"].fillna("")).str.lower()
-    out = pd.Series("On-site", index=df.index)
-    out[text.str.contains(r"hybrid|hybride")] = "Hybrid"
-    out[text.str.contains(r"remote|télétravail|teletravail|work from home")] = "Remote"
-    out[df["work_arrangement"].isna() & (out == "On-site")] = "Not stated"
-    return out
+HOURS_DIVISOR = {"week": 1, "biweekly": 2, "month": 52 / 12, "year": 52}
+
+
+def weekly_hours(df: pd.DataFrame) -> pd.Series:
+    """Average of min/max hours, converted to a weekly figure; implausible values -> NaN."""
+    hmin, hmax = _to_number(df["hours_min"]), _to_number(df["hours_max"])
+    avg = pd.concat([hmin, hmax], axis=1).mean(axis=1)
+    per = df["hours_per"].fillna("week").str.lower().str.replace("-", "", regex=False)
+    weekly = avg / per.map(HOURS_DIVISOR).astype("float")
+    return weekly.where(weekly.between(5, 80))
 
 
 def transform(raw: pd.DataFrame, cfg: dict) -> pd.DataFrame:
     df = raw.copy()
-    df["title"] = clean_title(df["title"])
+    # Employer's own title when Job Bank has it; otherwise the posted (standard) title.
+    # The standard title is auto-assigned for external postings and is often wrong
+    # (e.g. "Business Strategy Specialist" coded as "information technology (IT) analyst").
+    df["standard_title"] = clean_title(df["title"])
+    df["title"] = clean_title(df["original_title"].where(df["original_title"].notna(), df["title"]))
+    df["title"] = df["title"].where(df["title"] != "", df["standard_title"])
     inc = _compile(cfg["filters"]["title_include"])
     exc = _compile(cfg["filters"]["title_exclude"])
     df = df[df["title"].str.contains(inc) & ~df["title"].str.contains(exc)].copy()
@@ -118,7 +125,8 @@ def transform(raw: pd.DataFrame, cfg: dict) -> pd.DataFrame:
     df["seniority"] = _first_match(df["title"], cfg["seniority"], "Mid")
     df = df.join(annualize(df, cfg))
     df["vacancies"] = _to_number(df["vacancies"]).fillna(1).clip(lower=1).astype(int)
-    df["work_arrangement"] = work_arrangement(df)
+    df["hours_per_week"] = weekly_hours(df).round(1)
+    df["posting_source"] = df["external"].map({"1": "External job board", "0": "Job Bank direct"}).fillna("Unknown")
     df["noc_code"] = df["noc_code"].astype("string").str.extract(r"(\d{4,5})", expand=False)
     df["city"] = df["city"].fillna("").str.strip().str.title().replace("", np.nan)
     return df.reset_index(drop=True)

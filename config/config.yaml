@@ -3,7 +3,7 @@
 source:
   # Drop the monthly Job Bank open-data CSVs (English files) here.
   # https://open.canada.ca/data/en/dataset/ea639e28-c0fc-48bf-b5dd-b8899bd43072
-  raw_dir: data/raw
+  raw_dir: data/job-bank
   file_glob: "*.csv"
 
 output:
@@ -25,15 +25,19 @@ filters:
 # Role families, checked in order; first match wins. Anything else = "Other analyst".
 role_families:
   - name: Data & BI
-    patterns: ['\bdata\b', '\bbi\b', 'business intelligence', 'reporting', 'analytics', 'insights?\b', 'database', '\bsql\b', 'données']
+    patterns: ['\bdata\b', '\bbi\b', 'business intelligence', 'reporting', 'analytics', 'insights?\b', 'database', '\bsql\b', 'données', 'statistic', 'artificial intelligence', '\bgis\b']
   - name: Financial
-    patterns: ['financ', 'fp&a', 'investment', 'credit', '\brisk\b', 'budget', 'pricing', 'treasury', 'cost\b', 'actuar']
+    patterns: ['financ', 'fp&a', 'investment', 'cr[eé]dit', '\brisk\b', 'budget', 'pricing', 'treasury', 'cost\b', 'actuar', 'accounting', 'comptab', '\btax\b', 'fiscal', 'accounts (?:payable|receivable)', 'audit', 'compliance', 'capital markets', 'banking', 'quantitative', 'payroll', 'accountant', 'lending', 'loans?\b', 'fixed income', 'asset management', 'real estate', 'insurance']
   - name: Business & Systems
-    patterns: ['business analyst', 'business systems', 'systems? analyst', '\bit analyst', 'process', 'functional', '\berp\b', '\bsap\b', 'affaires', 'informatique']
+    patterns: ['business', 'systems? analyst', 'management analyst', 'process', 'functional', 'fonctionnel', '\berp\b', '\bsap\b', 'affaires', 'integration', 'programmer', 'programmeu', 'applications? analyst', 'computer', 'd[eé]velopp', 'information systems']
+  - name: IT Support & Security
+    patterns: ['support', 'help ?desk', 'service desk', 'cyber', 'security', 's[eé]curit', 'network', 'r[eé]seau', 'technical', 'information technology', '\bit\b', 'informatique', 'infrastructure']
   - name: Marketing & Sales
-    patterns: ['marketing', 'sales', 'market research', 'digital', 'e-?commerce', 'customer']
+    patterns: ['marketing', 'sales', 'market research', 'market intelligence', 'social media', 'digital', 'e-?commerce', 'customer']
+  - name: Policy & Research
+    patterns: ['policy', 'politique', 'research', 'recherche', 'econom', 'intelligence', 'program analyst', 'regulatory']
   - name: Operations & Supply Chain
-    patterns: ['supply', 'logistic', 'inventory', 'operations?\b', 'procurement', 'demand', 'planning']
+    patterns: ['supply', 'logistic', 'inventory', 'operations?\b', 'procurement', 'demand', 'planning', 'purchas', 'energy']
   - name: Lab & Quality
     patterns: ['laborator', '\blab\b', 'chemi', 'quality', '\bqc\b', '\bqa\b', 'assay']
 
@@ -43,7 +47,7 @@ seniority:                       # checked in order; default = Mid
   - name: Senior
     patterns: ['\bsenior\b', '\bsr\.?\b', '\blead\b', 'principal', '\bstaff\b']   # "principal" also catches French "analyste principal"
   - name: Junior
-    patterns: ['\bjunior\b', '\bjr\.?\b', '\bentry\b', '\bassociate\b', '\bintern\b', 'co-?op', '\bstagiaire\b']
+    patterns: ['\bjunior\b', '\bjr\.?\b', '\bentry\b', '\bassociate\b', '\bintern\b', 'co-?op', '\bstagiaire\b', '\bstudent\b', '\bsummer\b', '\binternship\b']
 
 salary:
   default_hours_per_week: 37.5   # used when an hourly posting has no hours

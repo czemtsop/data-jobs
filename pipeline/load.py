@@ -17,7 +17,11 @@ import pandas as pd
 
 # canonical name -> candidate header spellings (normalized: lowercase alphanumerics only)
 COLUMN_CANDIDATES: dict[str, list[str]] = {
-    "posting_id": ["jobpostingid", "postingid", "jobid", "id", "jobbanknumber", "jobbankid"],
+    "posting_id": ["wicjoblocationsnapshotid", "jobpostingid", "postingid", "jobid", "id", "jobbanknumber", "jobbankid"],
+    # Job Bank has two titles: "Original Job Title" (what the employer wrote; only on
+    # postings from external job boards) and "Job Title" (a standardized NOC title,
+    # assigned automatically for external postings). transform.py prefers the original.
+    "original_title": ["originaljobtitle"],
     "title": ["jobtitle", "title", "jobtitleen", "positiontitle"],
     "noc_code": ["noc21code", "noc2021code", "noccode", "noc21", "noc"],
     "noc_name": ["noc21codename", "noc21name", "nocname", "noctitle", "noc21title", "noccodename"],
@@ -27,12 +31,15 @@ COLUMN_CANDIDATES: dict[str, list[str]] = {
     "salary_min": ["salaryminimum", "salarymin", "minimumsalary", "wagemin", "salaryfrom", "wagelow"],
     "salary_max": ["salarymaximum", "salarymax", "maximumsalary", "wagemax", "salaryto", "wagehigh"],
     "salary_per": ["salaryper", "salaryperiod", "wageper", "salarytype", "salaryunit", "payperiod"],
-    "hours_per_week": ["workhours", "hoursperweek", "hours", "weeklyhours", "workhoursperweek"],
+    "hours_min": ["hoursminimum", "hoursmin", "minimumhours"],
+    "hours_max": ["hoursmaximum", "hoursmax", "maximumhours"],
+    "hours_per": ["hoursper", "hoursperiod"],
     "vacancies": ["vacancycount", "vacancies", "numberofvacancies", "numberofpositions", "positions"],
     "employment_type": ["employmenttype", "fulltimeparttime", "jobtype"],
     "employment_term": ["employmentterm", "term", "jobterm"],
-    "work_arrangement": ["workarrangement", "remotework", "worklocationtype", "telework", "workplacetype"],
+    "external": ["externalindicator", "external"],
     "naics_code": ["naicscode", "naics", "industrycode"],
+    "economic_region": ["economicregion"],
     "education": ["educationlos", "education", "educationlevel", "levelofstudy"],
     "experience": ["experiencelevel", "experience", "experiencerequired"],
 }

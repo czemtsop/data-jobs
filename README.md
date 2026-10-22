@@ -1,221 +1,123 @@
-<h1 style="text-align: center;"> 📊 Data Career Insights: Job Market Analysis Engine </h1>
+# Canadian Analyst Job Market
 
-*<h4 style="text-align: center;"> Because who doesn't want to know what the data job market really looks like? </h3>*
+A Power BI analysis of analyst job postings across Canada. A BeautifulSoup scraper collects current postings from [jobbank.gc.ca](https://www.jobbank.gc.ca) every day, and the federal Job Bank's monthly open data supplies the history behind them.
 
-<h2 style="text-align: center;"> 1. 🚀 Project Overview </h2>
+## Business question
 
-This project dives into the wild world of data job postings, scraping and analyzing opportunities across Data Science, Analytics, and Engineering roles. It uncovers salary differences, skill trends, and the stories behind those "5+ years experience for entry-level" postings we all love to hate.
+**Where in Canada are employers hiring analysts right now, which kinds of analyst roles and tools are in demand, and what do they advertise as pay?**
 
-### 1.1 🎯 What This Project Does
+The audience is an analyst job seeker (or a career advisor, or a training provider) deciding where to apply, which specialisation to build toward, and what salary to expect — using what employers actually posted rather than survey estimates.
 
-**The Fun Stuff:**
-- **Web Scraping Magic**: Automatically harvests job postings from popular job boards (because manually copying job descriptions is an engineering abomination)
-- **Data Cleaning Wizardry**: Transforms messy job posting chaos into pristine, analysis-ready datasets
-- **Smart Analytics**: Extracts meaningful patterns from the noise of corporate job-speak
-- **Visual Storytelling**: Creates compelling charts and reports that actually make sense
-- **Trend Spotting**: Identifies which skills are hot, which are not, and which might get you that dream salary
+## Data
 
-**The Business Value:**
-- Regional demand analysis for strategic career planning
-- Salary benchmarking across industries and experience levels
-- Early detection of emerging technologies and skill requirements
-- Evidence-based recommendations for job seekers and hiring managers
-- Historical trend analysis for workforce planning
-- Educational curriculum insights for training programs
-- Enhanced datasets for further research and analysis
+Two sources from the same job board, combined so the dashboard is both current and has history:
 
-<h2 style="text-align: center;">2. 🛠️ Technical Architecture </h2>
+| | Live scrape | Monthly open data |
+|---|---|---|
+| **What** | Job Bank search and posting pages, scraped with `requests` + BeautifulSoup | Every posting first advertised in a month, published as CSV by ESDC |
+| **Freshness** | Daily (scheduled run) | Each month is published a few weeks after it ends |
+| **Adds** | on-site / hybrid / remote, tools listed under *Computer and technology knowledge*, employer | 9 months of history (Jan–Sep 2026), consistent fields, original vs standard title |
+| **Used for** | postings first posted *after* the latest monthly file | everything up to the latest monthly file |
 
-### 2.1 Core Components
+The two use different IDs and can't be matched row by row, so a scraped posting is only kept if it was first posted after the latest open-data date. When the next monthly file is published, those weeks switch over to the official data automatically.
+
+**Scraping etiquette.** jobbank.gc.ca's robots.txt allows crawling with a 5-second delay; the scraper waits at least that long between requests, identifies itself with a project user-agent, and stops paging once it reaches postings it has already stored.
+
+### Monthly open data
+
+| | |
+|---|---|
+| **Source** | [Job Postings Advertised on Canada's National Job Bank](https://open.canada.ca/data/en/dataset/ea639e28-c0fc-48bf-b5dd-b8899bd43072), Employment and Social Development Canada |
+| **Licence** | [Open Government Licence – Canada](https://open.canada.ca/en/open-government-licence-canada) |
+| **Format** | One CSV per month of first posting (English and French files); this project uses the English files for January–September 2026 — 461,934 postings in total, stored in [`data/job-bank/`](data/job-bank/) |
+| **Fields used** | original and standard job title, NOC 2021 code, province/territory, city, economic region, first posting date, salary min/max and period, hours min/max and period, vacancies, employment type/term, external-posting indicator |
+| **Scope** | Postings whose title contains *analyst* / *analytics* (or French *analyste*), located in a Canadian province or territory — 3,985 postings |
+
+**Two kinds of posting, two kinds of title.** About 82% of the analyst postings come from external job boards that feed Job Bank; the rest were posted on Job Bank directly. External postings carry the employer's own wording ("Original Job Title") plus a standard NOC title that Job Bank assigns automatically — and that assigned title is often wrong: of 2,384 external postings coded *information technology (IT) analyst* that include the employer's title, only about 1% had "analyst" in the employer's title (most were "… Specialist" roles). The pipeline therefore matches on the employer's title whenever one exists.
+
+**Limitations.** Job Bank only covers employers who advertise there or on a contributing board, so its mix may differ from LinkedIn or Indeed. Salaries are *advertised* ranges, not offers. Title matching is transparent but imperfect — see the patterns in [`config/config.yaml`](config/config.yaml). Job Bank's telework field is never "Yes" in the monthly files, so work arrangement and tools come only from the live scrape and cover a shorter window. The scraper reads fields by their visible labels on the page; if Job Bank redesigns its pages, the run logs field coverage and refuses to save when titles go missing.
+
+## Approach
 
 ```
-📁 analysis/               # The insights factory
-├── analyzers.py           # Statistical analysis modules for job postings data.
-├── exporters.py           # Output formatting and delivery
-└── visualizers.py         # Chart and report generators
-
-📁 config/                 # Configuration management
-└── config.yaml            # Data Jobs Analysis Configuration
-
-📁 data/                   # The treasure chest
-├── raw/                   # Unprocessed job postings
-├── processed/             # Clean, analysis-ready datasets
-└── outputs/               # Reports and visualizations
-
-📁 scraper/                # The data collection engine
-├── __init__.py            # Job scraping module for data career job postings analysis.
-├── base_scraper.py        # Base scraper class and common utilities for job data collection.
-├── coordinator.py         # Coordinator for managing multiple job board scrapers.
-├── jobicy_scraper.py      # Jobicy job board scraper implementation.
-└── remoteok_scraper.py    # RemoteOK job board scraper implementation.
-
-── analyze_jobs.ipynb      # Interactive analysis playground
+jobbank.gc.ca ─► scraper/ (requests + BeautifulSoup) ─► data/scraped/ ─┐
+                 search pages → posting IDs                             │
+                 posting pages → fields, tools, arrangement             ├─► pipeline/ ─► data/model/ ─► Power BI
+Job Bank monthly CSVs (data/job-bank/) ─────────────────────────────────┘   filter, derive,  star schema   (powerbi/)
+                                                                              findings
 ```
 
-### 2.2 Key Technologies
-- **Python 3.12+**: The backbone of our operation
-- **BeautifulSoup**: For web scraping excellence
-- **Pandas/NumPy**: Data manipulation workhorses
-- **Matplotlib/Seaborn**: Visualization powerhouses
-- **Jupyter**: Interactive analysis environment
+0. **Scrape** — `python -m scraper` pages through Job Bank search results for *analyst* / *analyste* (newest first), collects posting IDs it hasn't seen, then fetches each posting page and parses it with BeautifulSoup: title, employer, city/province, posted date, salary, hours, work arrangement, education, experience, NOC code, tasks, and the tools listed under *Computer and technology knowledge*. New postings are merged into `data/scraped/postings.csv` and `skills.csv`.
+1. **Load** — each month's file is read with encoding and delimiter detection, and its headers are mapped to a canonical schema (`python -m pipeline inspect` shows the mapping).
+2. **Filter** — keep Canadian postings with an analyst title; drop clinical "behaviour analyst" roles and duplicate posting IDs. Each monthly file holds postings *first posted* that month, so months don't overlap.
+3. **Derive**
+   - *Title* — the employer's original title where present, otherwise the posted title.
+   - *Role family* (Data & BI, Financial, Business & Systems, IT Support & Security, Marketing & Sales, Policy & Research, Operations & Supply Chain, Lab & Quality, Other) from title keywords in English and French, first match wins. About 9% of postings stay "Other" — mostly generic titles such as "Analyst" or "Senior Analyst".
+   - *Seniority* (Junior / Mid / Senior / Manager) from title keywords.
+   - *Annual salary* — hourly × weekly hours (from the posting's hours range; 37.5 if missing) × 52; daily × 260; weekly × 52; bi-weekly × 26; monthly × 12. Midpoint of min/max; values outside $25K–$400K are treated as unusable.
+4. **Model** — one fact table (`fact_postings`), four dimensions (province, role family, seniority, date) and a posting–tool bridge (`bridge_posting_skill`, `dim_skill`) for Power BI. See [`powerbi/BUILD.md`](powerbi/BUILD.md) for relationships, DAX measures and layout.
+5. **Report** — medians rather than means (salaries are skewed), and no group is ranked on fewer than 30 salaried postings. The month-over-month trend uses complete open-data months only. A tools finding appears once at least 30 scraped postings list tools. The findings below are written by `pipeline/findings.py`, so they refresh whenever the pipeline is rerun.
 
-<h2 style="text-align: center;"> 3. 🚦 Getting Started </h2>
+## Findings
 
-### 3.1 Prerequisites
-- Python 3.12 or higher
-- Basic understanding of data analysis (helpful but not required)
-- A snack and/or preferred beverage (essential)
+<!-- FINDINGS:START -->
+1. **Demand is concentrated.** Ontario and Quebec account for 71% of the 3,985 analyst postings (Ontario alone 52%).
+2. **Analyst hiring cooled.** Monthly analyst postings fell 33%, from an average of 559 in Jan–Mar to 377 in Jul–Sep 2026, while all Job Bank postings rose 9% over the same period.
+3. **Financial analysts are the largest group** at 31% of postings; Data & BI roles are 17%.
+4. **The kind of analyst matters for pay.** Data & BI postings advertise a median $92K (n=672), 32% more than Marketing & Sales at $70K (n=81).
+5. **Pay differs between the two biggest markets.** The median is $91K in Ontario versus $78K in Quebec, 14% lower (national median $88K).
 
-### 3.2 Installation
+<sub>Job Bank postings with an analyst title, first posted 2026-01-01 to 2026-09-30 (9 months). Salaries are advertised ranges converted to annual CAD (midpoint); 99% of postings include one. Medians are only compared for groups with at least 30 salaried postings.</sub>
+<!-- FINDINGS:END -->
 
-1. Clone the repository:
-    ```bash
-    git clone https://github.com/czemtsop/data-jobs.git
-    cd data-jobs
-    ```
-2. **Set up your environment:**
+## Dashboard
+
+![Canadian Analyst Job Market dashboard](docs/dashboard.png)
+
+Built in Power BI Desktop — [`powerbi/canada-analyst-market.pbix`](powerbi/). Two pages: the market overview (filters by month, province, role family, seniority, posting source and data source) and *Right now* (tools and work arrangement from the live scrape).
+
+## How to run
+
+**Requirements:** Python 3.12+, [uv](https://docs.astral.sh/uv/) (or pip), Power BI Desktop (Windows) for the report.
+
+```bash
+git clone https://github.com/czemtsop/data-jobs.git
+cd data-jobs
+uv sync
+```
+
+1. **Scrape current postings** (about 5 s per page, so a first run takes 30+ minutes; later runs only fetch what's new):
    ```bash
-   # Using uv (recommended)
-    uv sync 
-    ```
-
-3. **Configure your settings:**
-   ```bash
-   # Replace the config.yaml file with your preferences (config_example.yaml)
-   cp config/config_example.yaml config/config.yaml
+   uv run python -m scraper                  # all configured queries
+   uv run python -m scraper --max-pages 1 --save-html data/scraped/html   # quick test, keeps the raw pages
    ```
+   To run it every day, move [`deploy/scrape.yml`](deploy/scrape.yml) to `.github/workflows/` and push: GitHub Actions will scrape, rebuild the tables and commit the results each morning.
+2. **Monthly data.** January–September 2026 is already in `data/job-bank/`. To add months, download more English files (`job-bank-open-data-all-job-postings-en-<month><year>.csv`) from the [Job Bank dataset page](https://open.canada.ca/data/en/dataset/ea639e28-c0fc-48bf-b5dd-b8899bd43072) into the same folder.
+3. **Check the headers mapped** (Job Bank has changed column names between releases):
+   ```bash
+   uv run python -m pipeline inspect
+   ```
+4. **Build the model and findings:**
+   ```bash
+   uv run python -m pipeline run
+   ```
+   Writes `data/model/*.csv`, `data/model/findings.json`, and refreshes the Findings section above.
+5. **Open the report.** Open `powerbi/canada-analyst-market.pbix` and click **Refresh**, or build it from scratch with [`powerbi/BUILD.md`](powerbi/BUILD.md).
+6. **Tests:** `uv run pytest`
 
-### 3.3 Quick Start Options
-
-**Option 1: Interactive Analysis (Recommended for beginners)**
-
-Use the [analyze_jobs](analyze_jobs.ipynb) jupyter notebook
-```bash
-jupyter notebook analyze_jobs.ipynb
 ```
-
-**Option 2: Command Line Power User**
-```bash
-python main.py
+config/config.yaml   filters, role-family and seniority rules, salary assumptions, scrape settings
+scraper/             fetch (polite client) → parse (BeautifulSoup) → store
+pipeline/            load → transform → model → findings
+deploy/scrape.yml    daily GitHub Actions run (move into .github/workflows/ to enable)
+data/scraped/        scraped postings and their tools (grows daily)
+powerbi/             BUILD.md, measures.dax, theme.json, .pbix
+data/job-bank/       Job Bank monthly CSVs, Jan–Sep 2026 (~410 MB)
+data/model/          star-schema CSVs Power BI reads (committed)
+docs/                dashboard image
+archive/v1-remote-jobs/  the original 2025 remote-jobs scraper (RemoteOK / Jobicy)
 ```
-
-**Option 3: Custom Analysis** Import modules individually for specific tasks
-
-<h2 style="text-align: center;"> 4. 📈 What You'll Discover </h2>
-
-### 4.1 Sample Insights Generated
-
-![Job market insights](data/outputs/job_market_dashboard.png)
-
-
-<h2 style="text-align: center;"> 5. 🔧 Configuration & Customization </h2>
-
-### Scraping Configuration
-```yaml
-scrapers:
-  jobicy:
-    enabled: true
-    delay: 10  # Be nice to their servers
-    max_pages: 50
-  remoteok:
-    enabled: true
-    delay: 10  # We're that considerate
-  jooble:
-    enabled: false  # Requires authentication
-    
-filters:
-  job_titles: ["Data Scientist", "Data Engineer", "Data Analyst"]
-  locations: ["Remote", "Canada"]
-  experience_levels: ["Entry", "Mid", "Senior", "Executive"]
-```
-
-### Analysis Parameters
-```yaml
-text_processing:
-  custom_stopwords: ['across', 'help', 'skills', 'will', 'job', 'work', 'team', 'company']
-  max_words_wordcloud: 30
-  top_keywords_count: 20
-
-analysis:
-  salary_outlier_threshold: 3
-  minimum_job_count: 10
-  trend_analysis_days: 90
-
-output:
-  data_dir: "data"
-  raw_dir: "data/raw"
-  processed_dir: "data/processed"
-  reports_dir: "data/outputs"
-  
-visualization:
-  wordcloud:
-    width: 800
-    height: 400
-    background_color: 'white'
-    contour_color: 'steelblue'
-    contour_width: 1
-  
-  charts:
-    figsize: [12, 6]
-    style: 'seaborn-v0_8'
-```
-
-<h2 style="text-align: center;"> 6. 🚧 Current Limitations & Workarounds </h2>
-
-**What We're Working On:**
-- **Rate Limiting**: Most job boards don't appreciate web scraping (we're implementing smarter delays)
-- **Data Standardization**: Job titles are... creative ("Computational journalist" is apparently a real thing)
-- **Geographic Normalization**: "Remote" sometimes needs a passport.
-
-**Known Issues:**
-- Salary parsing struggles with "competitive salary" (shocking, we know)
-- Job location tagging needs refinement
-
-<h2 style="text-align: center;"> 7. 🔮 Exciting Future Enhancements </h2>
-
-### 7.1 Phase 2: Expansion Pack
-- **Multi-Platform Scraping**: Indeed, Glassdoor, LinkedIn, AngelList, Stack Overflow Jobs
-- **Network Analysis**: Company hiring patterns and employee movement
-- **Crowdsourced Insights**: Community-contributed salary and interview data
-
-### 7.2 Phase 3: Automation and AI Revolution
-
-- **Smart web scraping**: AI-powered web scraping for job boards with no APIs
-- **Daily scraping**:  Set up cron jobs for regular data collection
-- **Machine Learning Enhancements**: Job description similarity clustering, salary prediction models, skills demand forecasting
-
-<h2 style="text-align: center;"> 8. 🤝 Contributing </h2>
-
-We love contributors! Whether you're fixing typos, adding features, or sharing insights:
-
-1. **Fork the repository**
-2. **Create a feature branch**: `git checkout -b feature/amazing-addition`
-3. **Make your changes**
-4. **Submit a pull request**
-
-### Contribution Ideas
-- Add new job board scrapers
-- Improve data cleaning algorithms
-- Create new visualization types
-- Write documentation (always appreciated!)
-- Share interesting analysis findings
-
-<h2 style="text-align: center;"> 9.🛡️ Data Privacy & Ethics </h2>
-
-We take data responsibility seriously:
-- **Public Data Only**: We only scrape publicly available job postings
-- **Respectful Scraping**: Rate limiting and robots.txt compliance
-- **Data Anonymization**: Personal information is never collected or stored
-- **Transparent Methods**: All scraping and analysis code is open source
-
-
-<h2 style="text-align: center;"> 10. 📄 License & Legal </h2>
-
-This project is licensed under the GNU General Public License v3.0 - because knowledge should be free, but please give credit where it's due.
-
-### Disclaimer
-This tool is for educational and research purposes. Always respect website terms of service and be mindful of scraping policies. We're not responsible if you get banned from a job board for being too enthusiastic with the scraper (but we'll help you debug it).
 
 ---
 
-*Built with ❤️ by data nerds, for data nerds. May your p-values be significant and your models converge.*
+Licensed under GPL-3.0. Job Bank data © Government of Canada, used under the Open Government Licence – Canada.

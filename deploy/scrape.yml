@@ -1,0 +1,36 @@
+# Daily scrape of jobbank.gc.ca, committed back to the repo.
+# To enable: move this file to .github/workflows/scrape.yml and push
+#   (a push that adds a workflow needs a token with the `workflow` scope — your own git login has it).
+name: daily-jobbank-scrape
+
+on:
+  schedule:
+    - cron: "17 11 * * *"   # 11:17 UTC daily (05:17 in Regina), off the top of the hour
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: scrape
+  cancel-in-progress: false
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync
+      - name: Scrape new analyst postings
+        run: uv run python -m scraper
+      - name: Rebuild model tables and README findings
+        run: uv run python -m pipeline run
+      - name: Commit if anything changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add data/scraped data/model README.md
+          git diff --cached --quiet || git commit -m "Daily Job Bank scrape $(date -u +%F)"
+          git push

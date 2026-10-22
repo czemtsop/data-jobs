@@ -1,0 +1,58 @@
+# Data Jobs Analysis Configuration
+
+scrapers:
+  remoteok:
+    enabled: true
+    url: "https://remoteok.com/api"
+    timeout: 10
+    rate_limit_delay: 2
+  
+  jobicy:
+    enabled: true
+    url: "https://jobicy.com/api/v2/remote-jobs"
+    timeout: 10
+    rate_limit_delay: 2
+    
+  jooble:
+    enabled: false  # Requires API key setup
+    url: "https://jooble.org/api/"
+    timeout: 10
+
+# Job filtering criteria
+filters:
+  keywords: ['analy', 'data', 'machine learning', 'intelligence']
+  job_titles: ["Data Scientist", "Data Engineer", "Data Analyst", "Machine Learning Engineer"]
+  locations: ["Remote", "Canada"]
+  experience_levels: ["Entry", "Mid", "Senior", "Executive"]
+
+# Text processing settings
+text_processing:
+  custom_stopwords: ['across', 'help', 'skills', 'will', 'job', 'work', 'team', 'company']
+  max_words_wordcloud: 30
+  top_keywords_count: 20
+
+# Analysis settings
+analysis:
+  salary_outlier_threshold: 3
+  minimum_job_count: 10
+  trend_analysis_days: 90
+
+# Output settings
+output:
+  data_dir: "data"
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  reports_dir: "data/outputs"
+  
+# Visualization settings
+visualization:
+  wordcloud:
+    width: 800
+    height: 400
+    background_color: 'white'
+    contour_color: 'steelblue'
+    contour_width: 1
+  
+  charts:
+    figsize: [12, 6]
+    style: 'seaborn-v0_8'

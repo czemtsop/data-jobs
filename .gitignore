@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.venv/
+.idea/
+.vscode/
+.ipynb_checkpoints/
+.pytest_cache/
+
+# Power BI temp/cache
+*.pbix.bak
+.pbi/

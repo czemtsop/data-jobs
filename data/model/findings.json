@@ -1,0 +1,168 @@
+{
+  "scope": {
+    "postings": 3985,
+    "vacancies": 4226,
+    "first_date": "2026-01-01",
+    "last_date": "2026-09-30",
+    "months": 9,
+    "source_files": [
+      "job-bank-open-data-all-job-postings-en-apr2026.csv",
+      "job-bank-open-data-all-job-postings-en-aug2026.csv",
+      "job-bank-open-data-all-job-postings-en-feb2026.csv",
+      "job-bank-open-data-all-job-postings-en-jan2026.csv",
+      "job-bank-open-data-all-job-postings-en-july2026.csv",
+      "job-bank-open-data-all-job-postings-en-june2026.csv",
+      "job-bank-open-data-all-job-postings-en-mar2026.csv",
+      "job-bank-open-data-all-job-postings-en-may2026.csv",
+      "job-bank-open-data-all-job-postings-en-sept2026.csv"
+    ],
+    "min_group_size": 30
+  },
+  "salary_coverage": 0.9872020075282308,
+  "national_median_salary": 88270.0,
+  "province_share": {
+    "ON": 0.5154328732747804,
+    "QC": 0.19523212045169386,
+    "BC": 0.10589711417816813,
+    "SK": 0.04542032622333752,
+    "AB": 0.044165621079046424,
+    "NS": 0.041154328732747804,
+    "NB": 0.034629861982434125,
+    "NL": 0.008030112923462986,
+    "MB": 0.006775407779171894,
+    "PE": 0.0012547051442910915,
+    "YT": 0.000752823086574655,
+    "NT": 0.000752823086574655,
+    "NU": 0.0005018820577164366
+  },
+  "role_family_share": {
+    "Financial": 0.3074027603513174,
+    "Business & Systems": 0.2396486825595985,
+    "Data & BI": 0.17038895859473024,
+    "IT Support & Security": 0.11016311166875785,
+    "Other analyst": 0.08858218318695106,
+    "Policy & Research": 0.027101631116687577,
+    "Operations & Supply Chain": 0.024843161856963614,
+    "Marketing & Sales": 0.02082810539523212,
+    "Lab & Quality": 0.011041405269761606
+  },
+  "role_family_median": {
+    "Data & BI": {
+      "median": 92497.59999999999,
+      "n": 672
+    },
+    "Policy & Research": {
+      "median": 92136.745,
+      "n": 108
+    },
+    "Business & Systems": {
+      "median": 90840.75,
+      "n": 948
+    },
+    "Financial": {
+      "median": 87823.2,
+      "n": 1202
+    },
+    "Lab & Quality": {
+      "median": 87137.5,
+      "n": 44
+    },
+    "Operations & Supply Chain": {
+      "median": 85000.0,
+      "n": 97
+    },
+    "Other analyst": {
+      "median": 81544.125,
+      "n": 346
+    },
+    "IT Support & Security": {
+      "median": 77198.0,
+      "n": 436
+    },
+    "Marketing & Sales": {
+      "median": 70000.0,
+      "n": 81
+    }
+  },
+  "province_median": {
+    "ON": {
+      "median": 90840.75,
+      "n": 2012
+    },
+    "NS": {
+      "median": 90840.75,
+      "n": 163
+    },
+    "BC": {
+      "median": 89856.0,
+      "n": 422
+    },
+    "SK": {
+      "median": 85280.0,
+      "n": 181
+    },
+    "AB": {
+      "median": 84825.0,
+      "n": 174
+    },
+    "NL": {
+      "median": 84459.125,
+      "n": 32
+    },
+    "NB": {
+      "median": 84313.125,
+      "n": 138
+    },
+    "QC": {
+      "median": 78000.0,
+      "n": 772
+    }
+  },
+  "seniority_median": {
+    "Manager": {
+      "median": 102500.0,
+      "n": 179
+    },
+    "Senior": {
+      "median": 94292.25,
+      "n": 734
+    },
+    "Junior": {
+      "median": 84825.0,
+      "n": 171
+    },
+    "Mid": {
+      "median": 84192.0,
+      "n": 2850
+    }
+  },
+  "monthly_postings": {
+    "2026-01": 585,
+    "2026-02": 577,
+    "2026-03": 516,
+    "2026-04": 493,
+    "2026-05": 337,
+    "2026-06": 347,
+    "2026-07": 401,
+    "2026-08": 317,
+    "2026-09": 412
+  },
+  "live_scrape": {
+    "postings": 0
+  },
+  "all_postings_monthly": {
+    "2026-01": 51178,
+    "2026-02": 44176,
+    "2026-03": 49746,
+    "2026-04": 53616,
+    "2026-05": 49961,
+    "2026-06": 55091,
+    "2026-07": 51999,
+    "2026-08": 53799,
+    "2026-09": 52368
+  },
+  "posting_source_share": {
+    "External job board": 0.8233375156838143,
+    "Job Bank direct": 0.1766624843161857
+  }
+}

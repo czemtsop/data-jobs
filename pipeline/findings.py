@@ -34,7 +34,29 @@ def _pct(x: float) -> str:
     return f"{x:.0%}"
 
 
-def compute(df: pd.DataFrame, min_n: int, all_monthly: dict[str, int] | None = None) -> dict:
+def _live_summary(live: pd.DataFrame, skills: pd.DataFrame | None) -> dict:
+    if live.empty:
+        return {"postings": 0}
+    out = {
+        "postings": int(len(live)),
+        "first_date": live["posted_date"].min().strftime("%Y-%m-%d"),
+        "last_date": live["posted_date"].max().strftime("%Y-%m-%d"),
+        "work_arrangement_share": {k: float(v) for k, v in live["work_arrangement"].value_counts(normalize=True).items()},
+    }
+    if skills is not None and len(skills):
+        sk = skills[skills["posting_id"].isin(live["posting_id"])]
+        with_tools = sk["posting_id"].nunique()
+        out["postings_listing_tools"] = int(with_tools)
+        if with_tools:
+            share = sk.groupby("skill")["posting_id"].nunique().sort_values(ascending=False) / with_tools
+            out["tool_share"] = {k: float(v) for k, v in share.head(15).items()}
+    return out
+
+
+def compute(df: pd.DataFrame, min_n: int, all_monthly: dict[str, int] | None = None,
+            skills: pd.DataFrame | None = None) -> dict:
+    open_df = df[df["data_source"] == "Open data"]
+    live = df[df["data_source"] == "Live scrape"]
     sal = df[df["has_salary"]]
     nat_median = _median(sal["salary_mid_annual"])
 
@@ -64,7 +86,9 @@ def compute(df: pd.DataFrame, min_n: int, all_monthly: dict[str, int] | None = N
         "role_family_median": {k: {"median": float(r["median"]), "n": int(r["count"])} for k, r in fam_pay.iterrows()},
         "province_median": {k: {"median": float(r["median"]), "n": int(r["count"])} for k, r in prov_pay.iterrows()},
         "seniority_median": {k: {"median": float(r["median"]), "n": int(r["count"])} for k, r in sen_pay.iterrows()},
-        "monthly_postings": {str(k): int(v) for k, v in df.groupby(df["posted_date"].dt.to_period("M")).size().items()},
+        # trend uses complete open-data months only; the live scrape covers a partial month
+        "monthly_postings": {str(k): int(v) for k, v in open_df.groupby(open_df["posted_date"].dt.to_period("M")).size().items()},
+        "live_scrape": _live_summary(live, skills),
         "all_postings_monthly": all_monthly or {},
         "posting_source_share": {k: float(v) for k, v in df["posting_source"].value_counts(normalize=True).items()},
     }
@@ -124,9 +148,21 @@ def to_markdown(f: dict) -> str:
                      f"{_money(hi_m)} in {_prov(hi_p)} versus {_money(lo_m)} in {_prov(lo_p)}, "
                      f"{_pct(1 - lo_m / hi_m)} lower (national median {_money(f['national_median_salary'])}).")
 
+    # 6. tools asked for (live scrape only; needs enough postings that list tools)
+    lv = f.get("live_scrape", {})
+    n_tools = lv.get("postings_listing_tools", 0)
+    if n_tools >= sc["min_group_size"] and lv.get("tool_share"):
+        top = list(lv["tool_share"].items())[:3]
+        tools = ", ".join(f"{k} ({_pct(v)})" for k, v in top)
+        lines.insert(3, f"**The tools employers name.** Among {n_tools:,} recent postings that list computer skills "
+                        f"({lv['first_date']} to {lv['last_date']}, scraped from jobbank.gc.ca), the most requested are {tools}.")
+        lines = [l for l in lines if not l.startswith(f"**{fam[0][0]} analysts are the largest group")] if fam else lines
+
     numbered = "\n".join(f"{i}. {line}" for i, line in enumerate(lines[:5], 1))
+    live_note = (f" Includes {lv['postings']:,} postings scraped from jobbank.gc.ca after the latest monthly file."
+                 if lv.get("postings") else "")
     footer = (f"\n\n<sub>Job Bank postings with an analyst title, first posted {sc['first_date']} to {sc['last_date']} "
-              f"({sc['months']} months). Salaries are advertised ranges converted to annual CAD (midpoint); "
+              f"({sc['months']} months).{live_note} Salaries are advertised ranges converted to annual CAD (midpoint); "
               f"{_pct(f['salary_coverage'])} of postings include one. Medians are only compared for groups with at "
               f"least {sc['min_group_size']} salaried postings.</sub>")
     return numbered + footer

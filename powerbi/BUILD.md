@@ -5,7 +5,7 @@ This guide rebuilds `powerbi/canada-analyst-market.pbix` from scratch in about a
 
 ## 1. Load the data
 
-**Get data → Text/CSV**, load all five files from `data/model/`:
+**Get data → Text/CSV**, load all seven files from `data/model/`:
 
 | Table | Grain | Key |
 |---|---|---|
@@ -14,6 +14,8 @@ This guide rebuilds `powerbi/canada-analyst-market.pbix` from scratch in about a
 | `dim_role_family` | one row per role family | `role_family` |
 | `dim_seniority` | Junior / Mid / Senior / Manager | `seniority` |
 | `dim_date` | one row per calendar day | `date` |
+| `bridge_posting_skill` | one row per (posting, tool) — live-scraped postings only | `posting_id`, `skill` |
+| `dim_skill` | one row per tool, with posting count | `skill` |
 
 In Power Query, check types: `posted_date` and `dim_date[date]` = Date; salary columns = Decimal; `vacancies` = Whole number; `has_salary` = True/False; `noc_code` = **Text** (keeps leading zeros).
 
@@ -28,7 +30,11 @@ dim_date[date]                ──1:*── fact_postings[posted_date]
 dim_province[province_code]   ──1:*── fact_postings[province_code]
 dim_role_family[role_family]  ──1:*── fact_postings[role_family]
 dim_seniority[seniority]      ──1:*── fact_postings[seniority]
+dim_skill[skill]              ──1:*── bridge_posting_skill[skill]
+fact_postings[posting_id]     ──1:*── bridge_posting_skill[posting_id]   (cross-filter: Both)
 ```
+
+The bridge relationship is the one place filtering runs both ways, so picking a tool in a slicer filters the postings that ask for it.
 
 - Mark `dim_date` as the date table (column `date`).
 - Sort `dim_seniority[seniority]` by `sort_order`, `dim_date[month]` by `month_start`, and `dim_role_family[role_family]` by `sort_order` (keeps "Other analyst" last).
@@ -48,7 +54,7 @@ Create a `_Measures` table and add the measures in [`measures.dax`](measures.dax
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
 │ Title + [Report Scope] subtitle                     Slicers: Month ▾   │
-│                                         Province ▾ Family ▾ Source ▾  │
+│                              Province ▾ Family ▾ Source ▾ Data source ▾│
 ├──────────────┬──────────────┬──────────────┬───────────────────────────┤
 │ Postings     │ Vacancies    │ Median salary│ Salary coverage %         │
 ├──────────────┴──────────────┼──────────────┴───────────────────────────┤
@@ -61,6 +67,17 @@ Create a `_Measures` table and add the measures in [`measures.dax`](measures.dax
 └─────────────────────────────┴──────────────────────────────────────────┘
 ```
 
+Second page — **"Right now" (live scrape)**, filtered to `data_source = "Live scrape"`:
+
+```
+┌──────────────────────────────┬─────────────────────────────────────────┐
+│ Bar: Top 10 tools by          │ Bar: Postings by work arrangement       │
+│ [Tool Share] (dim_skill)      │ (On site / Hybrid / Remote)             │
+├──────────────────────────────┴─────────────────────────────────────────┤
+│ Table: latest postings — date, title, employer, city, salary, link     │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
 Visual notes:
 
 - **KPI cards** — `[Postings]`, `[Vacancies]`, `[Median Salary]`, `[Salary Coverage %]`.
@@ -69,6 +86,9 @@ Visual notes:
 - **Pay by role family** — clustered bar of `[Median Salary (reliable)]`; Analytics pane → error bars with `[Salary P25]` / `[Salary P75]` as lower/upper bounds. Families under 30 salaried postings show blank by design.
 - **Seniority** — column chart, axis `dim_seniority[seniority]`, value `[Median Salary (reliable)]`.
 - **Trend** — line chart, axis `dim_date[week_start]`, value `[Postings]`. One axis only.
+- **Data source slicer** — `fact_postings[data_source]`: "Open data" (monthly files) or "Live scrape" (postings newer than the latest file).
+- **Tools** — bar of `[Tool Share]` by `dim_skill[skill]`, Top N = 10 filter on `[Postings Listing Tools]`. Show the n in the subtitle; hide the visual (or show a note) when fewer than 30 postings list tools.
+- **Work arrangement** — open-data rows are "Not captured"; filter them out of this visual.
 - **Source slicer** — `fact_postings[posting_source]` (Job Bank direct vs External job board), so viewers can check findings hold for both.
 - Keep gridlines dotted, no data labels on every point, legend off for single-series visuals.
 

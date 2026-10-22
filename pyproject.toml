@@ -1,11 +1,14 @@
 [project]
 name = "data-jobs"
 version = "0.2.0"
-description = "Canadian analyst job market: Job Bank open data -> Power BI star schema"
+description = "Canadian analyst job market: Job Bank scraper + open data -> Power BI star schema"
 requires-python = ">=3.12"
 dependencies = [
+    "beautifulsoup4>=4.13.4",
+    "lxml>=5.3",
     "pandas>=2.2.3",
     "pyyaml>=6.0.2",
+    "requests>=2.32.3",
 ]
 
 [dependency-groups]

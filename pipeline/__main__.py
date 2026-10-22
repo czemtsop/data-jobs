@@ -12,7 +12,7 @@ from pathlib import Path
 import pandas as pd
 import yaml
 
-from . import findings, load, model, transform
+from . import findings, load, model, scraped, transform
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -33,15 +33,23 @@ def main() -> None:
         return
 
     raw = load.load_all(raw_dir, pattern)
-    print(f"Loaded {len(raw):,} postings from {raw['source_file'].nunique()} file(s)")
+    print(f"Loaded {len(raw):,} postings from {raw['source_file'].nunique()} open-data file(s)")
+    posted = pd.to_datetime(raw["posted_date"], errors="coerce", format="mixed")
+    all_monthly = {str(k): int(v) for k, v in posted.dt.to_period("M").value_counts().sort_index().items()}
+
+    live, skills = scraped.load_scraped(ROOT / cfg["scrape"]["store_dir"])
+    live = scraped.after_open_data(live, posted.max())
+    if len(live):
+        print(f"Adding {len(live):,} scraped postings first posted after {posted.max():%Y-%m-%d}")
+        raw = pd.concat([raw, live], ignore_index=True)
+
     df = transform.transform(raw, cfg)
-    print(f"Kept {len(df):,} Canadian analyst postings")
-    paths = model.build_model(df, ROOT / cfg["output"]["model_dir"])
+    skills = skills[skills["posting_id"].isin(df["posting_id"])]
+    print(f"Kept {len(df):,} Canadian analyst postings ({(df['data_source'] == 'Live scrape').sum():,} from the live scrape)")
+    paths = model.build_model(df, ROOT / cfg["output"]["model_dir"], skills)
     for name, p in paths.items():
         print(f"  wrote {p.relative_to(ROOT)}")
-    posted = pd.to_datetime(raw["posted_date"], errors="coerce", format="mixed").dt.to_period("M")
-    all_monthly = {str(k): int(v) for k, v in posted.value_counts().sort_index().items()}
-    f = findings.compute(df, cfg["findings"]["min_group_size"], all_monthly)
+    f = findings.compute(df, cfg["findings"]["min_group_size"], all_monthly, skills)
     md = findings.write(f, ROOT / cfg["output"]["findings_file"], None if args.no_readme else ROOT / "README.md")
     print("\nFindings:\n" + md)
 

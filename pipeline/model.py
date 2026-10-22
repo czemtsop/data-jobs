@@ -10,13 +10,13 @@ from .transform import PROVINCES
 
 FACT_COLUMNS = [
     "posting_id", "posted_date", "province_code", "city", "title", "role_family", "seniority",
-    "noc_code", "noc_name", "posting_source", "economic_region", "hours_per_week", "employment_type", "employment_term", "vacancies",
+    "noc_code", "noc_name", "data_source", "posting_source", "work_arrangement", "economic_region", "hours_per_week", "employment_type", "employment_term", "vacancies",
     "salary_min_annual", "salary_max_annual", "salary_mid_annual", "salary_period", "has_salary",
     "source_file",
 ]
 
 
-def build_model(df: pd.DataFrame, model_dir: Path) -> dict[str, Path]:
+def build_model(df: pd.DataFrame, model_dir: Path, skills: pd.DataFrame | None = None) -> dict[str, Path]:
     model_dir.mkdir(parents=True, exist_ok=True)
     fact = df[FACT_COLUMNS].copy()
     for c in ["salary_min_annual", "salary_max_annual", "salary_mid_annual"]:
@@ -42,8 +42,13 @@ def build_model(df: pd.DataFrame, model_dir: Path) -> dict[str, Path]:
     dim_date["month_start"] = dim_date["date"].dt.to_period("M").dt.start_time
     dim_date["week_start"] = dim_date["date"] - pd.to_timedelta(dim_date["date"].dt.weekday, unit="D")
 
+    # bridge table: one row per (posting, tool) — only live-scraped postings have these
+    bridge = (skills if skills is not None else pd.DataFrame(columns=["posting_id", "skill"]))[["posting_id", "skill"]]
+    dim_skill = bridge.groupby("skill").size().rename("postings").reset_index().sort_values("postings", ascending=False)
+
     tables = {"fact_postings": fact, "dim_province": dim_province, "dim_role_family": dim_role,
-              "dim_seniority": dim_seniority, "dim_date": dim_date}
+              "dim_seniority": dim_seniority, "dim_date": dim_date,
+              "bridge_posting_skill": bridge, "dim_skill": dim_skill}
     paths = {}
     for name, table in tables.items():
         p = model_dir / f"{name}.csv"

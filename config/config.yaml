@@ -57,3 +57,12 @@ salary:
 
 findings:
   min_group_size: 30             # a province / family needs this many salaried postings to be ranked
+
+# Live scrape of jobbank.gc.ca (python -m scraper). Fills data/scraped/ with
+# postings newer than the latest open-data month, plus their listed tools/skills.
+scrape:
+  store_dir: data/scraped
+  queries: ["analyst", "analyste"]
+  max_pages_per_query: 40        # 25 results per page, newest first; stops early once caught up
+  max_postings_per_run: 400      # ~35 min at the 5 s crawl delay
+  delay_seconds: 5               # robots.txt Crawl-delay

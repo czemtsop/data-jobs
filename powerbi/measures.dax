@@ -53,6 +53,14 @@ DIVIDE ( [Postings] - [Postings Prev Month], [Postings Prev Month] )
 External Board Share =
 DIVIDE ( CALCULATE ( [Postings], fact_postings[posting_source] = "External job board" ), [Postings] )
 
+// --- Live scrape page -------------------------------------------------------
+Postings Listing Tools =
+CALCULATE ( DISTINCTCOUNT ( bridge_posting_skill[posting_id] ), REMOVEFILTERS ( dim_skill ) )
+
+// Share of postings that list any tool which ask for the selected tool.
+Tool Share =
+DIVIDE ( DISTINCTCOUNT ( bridge_posting_skill[posting_id] ), [Postings Listing Tools] )
+
 // Dynamic subtitle so the screenshot always states its own scope.
 Report Scope =
 VAR firstD = MIN ( fact_postings[posted_date] )

@@ -127,6 +127,11 @@ def transform(raw: pd.DataFrame, cfg: dict) -> pd.DataFrame:
     df["vacancies"] = _to_number(df["vacancies"]).fillna(1).clip(lower=1).astype(int)
     df["hours_per_week"] = weekly_hours(df).round(1)
     df["posting_source"] = df["external"].map({"1": "External job board", "0": "Job Bank direct"}).fillna("Unknown")
+    scraped = df["source_file"].eq("jobbank.gc.ca scrape")
+    df["data_source"] = scraped.map({True: "Live scrape", False: "Open data"})
+    # on-site / hybrid / remote is only on the live posting pages
+    arrangement = df["work_arrangement"] if "work_arrangement" in df else pd.Series(pd.NA, index=df.index)
+    df["work_arrangement"] = arrangement.where(scraped).fillna("Not captured")
     df["noc_code"] = df["noc_code"].astype("string").str.extract(r"(\d{4,5})", expand=False)
     df["city"] = df["city"].fillna("").str.strip().str.title().replace("", np.nan)
     return df.reset_index(drop=True)

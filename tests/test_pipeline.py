@@ -66,3 +66,27 @@ def test_model_and_findings(raw, tmp_path):
     f = findings.compute(df, min_n=1)
     md = findings.to_markdown(f)
     assert md.startswith("1. ") and "postings" in md
+
+
+def test_year_over_year_findings():
+    """Two comparable years switch the findings to year-over-year mode with like-for-like pay."""
+    rows = []
+    for year, n, direct_pay in [(2024, 40, 70000), (2025, 30, 72000)]:
+        for i in range(n):
+            for month in (1, 2):
+                rows.append({
+                    "posting_id": f"{year}-{month}-{i}", "posted_date": pd.Timestamp(f"{year}-{month:02d}-15"),
+                    "data_source": "Open data", "province_code": "ON", "role_family": "Data & BI" if i % 4 == 0 else "Financial",
+                    "seniority": "Mid", "vacancies": 1, "source_file": "x.csv", "has_salary": True,
+                    "posting_source": "Job Bank direct", "salary_mid_annual": direct_pay,
+                })
+    df = pd.DataFrame(rows)
+    f = findings.compute(df, min_n=30, all_monthly={"2024-01": 4000, "2024-02": 4000, "2025-01": 2000, "2025-02": 2000})
+    yr = f["yearly"]["years"]
+    assert f["yearly"]["window"] == "Jan–Feb"
+    assert yr[2024]["postings"] == 80 and yr[2025]["postings"] == 60
+    assert yr[2025]["direct_median_salary"] == 72000
+    md = findings.to_markdown(f)
+    assert "fell 25%, from 80 in 2024 to 60 in 2025" in md
+    assert "all Job Bank postings fell 50%" in md
+    assert "$70K in Jan–Feb 2024 and $72K in 2025" in md

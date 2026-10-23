@@ -96,17 +96,28 @@ def weekly_hours(df: pd.DataFrame) -> pd.Series:
     return weekly.where(weekly.between(5, 80))
 
 
-def transform(raw: pd.DataFrame, cfg: dict) -> pd.DataFrame:
-    df = raw.copy()
-    # Employer's own title when Job Bank has it; otherwise the posted (standard) title.
-    # The standard title is auto-assigned for external postings and is often wrong
-    # (e.g. "Business Strategy Specialist" coded as "information technology (IT) analyst").
-    df["standard_title"] = clean_title(df["title"])
-    df["title"] = clean_title(df["original_title"].where(df["original_title"].notna(), df["title"]))
-    df["title"] = df["title"].where(df["title"] != "", df["standard_title"])
+def pick_title(df: pd.DataFrame) -> pd.Series:
+    """Employer's own title when Job Bank has it; otherwise the posted (standard) title.
+
+    The standard title is auto-assigned for external postings and is often wrong
+    (e.g. "Business Strategy Specialist" coded as "information technology (IT) analyst").
+    """
+    standard = clean_title(df["title"])
+    title = clean_title(df["original_title"].where(df["original_title"].notna(), df["title"]))
+    return title.where(title != "", standard)
+
+
+def is_analyst(title: pd.Series, cfg: dict) -> pd.Series:
     inc = _compile(cfg["filters"]["title_include"])
     exc = _compile(cfg["filters"]["title_exclude"])
-    df = df[df["title"].str.contains(inc) & ~df["title"].str.contains(exc)].copy()
+    return title.str.contains(inc) & ~title.str.contains(exc)
+
+
+def transform(raw: pd.DataFrame, cfg: dict) -> pd.DataFrame:
+    df = raw.copy()
+    df["standard_title"] = clean_title(df["title"])
+    df["title"] = pick_title(df)
+    df = df[is_analyst(df["title"], cfg)].copy()
 
     df["province_code"] = province_code(df["province"])
     df = df[df["province_code"].notna()].copy()             # Canada only

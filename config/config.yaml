@@ -1,9 +1,12 @@
 # Canadian Analyst Job Market — pipeline configuration
 
 source:
-  # Drop the monthly Job Bank open-data CSVs (English files) here.
+  # Monthly Job Bank open-data CSVs (English files), downloaded by `python -m pipeline download`
+  # (and automatically by `pipeline run`). Not kept in git.
   # https://open.canada.ca/data/en/dataset/ea639e28-c0fc-48bf-b5dd-b8899bd43072
   raw_dir: data/job-bank
+  first_month: "2024-01"
+  last_month: null               # null = every month published since first_month
   file_glob: "*.csv"
 
 output:

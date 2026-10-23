@@ -23,6 +23,14 @@ jobs:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
       - run: uv sync
+      # open-data CSVs aren't in git: restore last month's copy, download only what's new
+      - id: month
+        run: echo "ym=$(date -u +%Y-%m)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        with:
+          path: data/job-bank
+          key: job-bank-${{ steps.month.outputs.ym }}
+          restore-keys: job-bank-
       - name: Scrape new analyst postings
         run: uv run python -m scraper
       - name: Rebuild model tables and README findings

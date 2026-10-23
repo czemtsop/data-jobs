@@ -11,9 +11,12 @@ from __future__ import annotations
 import csv
 import io
 import re
+import unicodedata
 from pathlib import Path
 
 import pandas as pd
+
+from .download import in_range, month_of
 
 # canonical name -> candidate header spellings (normalized: lowercase alphanumerics only)
 COLUMN_CANDIDATES: dict[str, list[str]] = {
@@ -48,7 +51,8 @@ REQUIRED = ["title", "province", "posted_date"]
 
 
 def _norm(header: str) -> str:
-    return re.sub(r"[^a-z0-9]", "", str(header).lower())
+    plain = unicodedata.normalize("NFKD", str(header)).encode("ascii", "ignore").decode()
+    return re.sub(r"[^a-z0-9]", "", plain.lower())
 
 
 def _detect_encoding(raw: bytes) -> str:
@@ -102,16 +106,23 @@ def load_month(path: Path) -> pd.DataFrame:
     for col in COLUMN_CANDIDATES:
         if col not in out.columns:
             out[col] = pd.NA
+    if "posting_id" not in mapping:
+        # Jun-Sep 2024 files have no ID column. Each monthly file holds distinct postings,
+        # so file + row number is a safe ID (blank IDs would all collapse in de-duplication).
+        out["posting_id"] = [f"{path.stem}#{i}" for i in range(len(out))]
     out["source_file"] = path.name
     return out
 
 
-def load_all(raw_dir: Path, pattern: str) -> pd.DataFrame:
+def load_all(raw_dir: Path, pattern: str, first_month: str | None = None, last_month: str | None = None) -> pd.DataFrame:
+    """All monthly files in raw_dir; with first_month set, only those in [first_month, last_month]."""
     files = sorted(raw_dir.glob(pattern))
+    if first_month:
+        files = [f for f in files if in_range(month_of(f.name), first_month, last_month)]
     if not files:
         raise FileNotFoundError(
-            f"No CSVs matching '{pattern}' in {raw_dir}/. Download the monthly English files from "
-            "https://open.canada.ca/data/en/dataset/ea639e28-c0fc-48bf-b5dd-b8899bd43072"
+            f"No CSVs matching '{pattern}' in {raw_dir}/. Run `python -m pipeline download` to fetch "
+            "the monthly English files from open.canada.ca"
         )
     frames = [load_month(f) for f in files]
     return pd.concat(frames, ignore_index=True)

@@ -35,7 +35,8 @@ def load_scraped(store_dir: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
     raw = pd.DataFrame({
         "posting_id": "JB-" + d["job_number"],
         "original_title": d["title"],
-        "title": d["title"],
+        # older store files have no standard_title column; fall back to the posted title
+        "title": d["standard_title"].fillna(d["title"]) if "standard_title" in d else d["title"],
         "noc_code": d["noc_code"],
         "province": d["province"],
         "city": d["city"],

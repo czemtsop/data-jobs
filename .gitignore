@@ -9,3 +9,9 @@ __pycache__/
 # Power BI temp/cache
 *.pbix.bak
 .pbi/
+
+# raw pages from `python -m scraper --save-html`
+data/scraped/html/
+
+# monthly open-data CSVs (~45 MB each): `python -m pipeline download`
+data/job-bank/

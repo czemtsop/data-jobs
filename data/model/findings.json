@@ -1,50 +1,77 @@
 {
   "scope": {
-    "postings": 3985,
-    "vacancies": 4226,
-    "first_date": "2026-01-01",
-    "last_date": "2026-09-30",
-    "months": 9,
+    "postings": 33451,
+    "vacancies": 35079,
+    "first_date": "2024-01-01",
+    "last_date": "2026-10-22",
+    "months": 34,
     "source_files": [
+      "job-bank-open-data-all-job-postings-aug2024.csv",
       "job-bank-open-data-all-job-postings-en-apr2026.csv",
+      "job-bank-open-data-all-job-postings-en-april2024.csv",
+      "job-bank-open-data-all-job-postings-en-april2025.csv",
       "job-bank-open-data-all-job-postings-en-aug2026.csv",
+      "job-bank-open-data-all-job-postings-en-august2025.csv",
+      "job-bank-open-data-all-job-postings-en-dec2024.csv",
+      "job-bank-open-data-all-job-postings-en-december2025.csv",
+      "job-bank-open-data-all-job-postings-en-feb2025.csv",
       "job-bank-open-data-all-job-postings-en-feb2026.csv",
+      "job-bank-open-data-all-job-postings-en-february2024.csv",
+      "job-bank-open-data-all-job-postings-en-jan2025.csv",
       "job-bank-open-data-all-job-postings-en-jan2026.csv",
+      "job-bank-open-data-all-job-postings-en-january2024.csv",
+      "job-bank-open-data-all-job-postings-en-jul2024.csv",
+      "job-bank-open-data-all-job-postings-en-july2025.csv",
       "job-bank-open-data-all-job-postings-en-july2026.csv",
+      "job-bank-open-data-all-job-postings-en-june2025.csv",
       "job-bank-open-data-all-job-postings-en-june2026.csv",
       "job-bank-open-data-all-job-postings-en-mar2026.csv",
+      "job-bank-open-data-all-job-postings-en-march2024.csv",
+      "job-bank-open-data-all-job-postings-en-march2025.csv",
+      "job-bank-open-data-all-job-postings-en-may2024.csv",
+      "job-bank-open-data-all-job-postings-en-may2025.csv",
       "job-bank-open-data-all-job-postings-en-may2026.csv",
-      "job-bank-open-data-all-job-postings-en-sept2026.csv"
+      "job-bank-open-data-all-job-postings-en-nov2024.csv",
+      "job-bank-open-data-all-job-postings-en-november2025.csv",
+      "job-bank-open-data-all-job-postings-en-oct2024.csv",
+      "job-bank-open-data-all-job-postings-en-october2025.csv",
+      "job-bank-open-data-all-job-postings-en-sep2024.csv",
+      "job-bank-open-data-all-job-postings-en-sept2026.csv",
+      "job-bank-open-data-all-job-postings-en-september2025.csv",
+      "jobbank.gc.ca scrape",
+      "june-2024-job-bank-open-data-all-job-postings-en.csv"
     ],
     "min_group_size": 30
   },
-  "salary_coverage": 0.9872020075282308,
+  "salary_coverage": 0.4177453588831425,
+  "pay_year": 2026,
+  "pay_year_salary_coverage": 0.9872148408122337,
   "national_median_salary": 88270.0,
   "province_share": {
-    "ON": 0.5154328732747804,
-    "QC": 0.19523212045169386,
-    "BC": 0.10589711417816813,
-    "SK": 0.04542032622333752,
-    "AB": 0.044165621079046424,
-    "NS": 0.041154328732747804,
-    "NB": 0.034629861982434125,
-    "NL": 0.008030112923462986,
-    "MB": 0.006775407779171894,
-    "PE": 0.0012547051442910915,
-    "YT": 0.000752823086574655,
-    "NT": 0.000752823086574655,
-    "NU": 0.0005018820577164366
+    "ON": 0.5156680872399098,
+    "QC": 0.19528703935823516,
+    "BC": 0.10579092504387065,
+    "SK": 0.04537478064677864,
+    "AB": 0.04412133366758586,
+    "NS": 0.04111306091752319,
+    "NB": 0.03459513662572073,
+    "NL": 0.008022060666833792,
+    "MB": 0.006768613687641012,
+    "PE": 0.00125344697919278,
+    "YT": 0.0007520681875156681,
+    "NT": 0.0007520681875156681,
+    "NU": 0.000501378791677112
   },
   "role_family_share": {
-    "Financial": 0.3074027603513174,
-    "Business & Systems": 0.2396486825595985,
-    "Data & BI": 0.17038895859473024,
-    "IT Support & Security": 0.11016311166875785,
-    "Other analyst": 0.08858218318695106,
-    "Policy & Research": 0.027101631116687577,
-    "Operations & Supply Chain": 0.024843161856963614,
-    "Marketing & Sales": 0.02082810539523212,
-    "Lab & Quality": 0.011041405269761606
+    "Financial": 0.2981076798899883,
+    "Business & Systems": 0.26916983049834087,
+    "Data & BI": 0.1422976891572748,
+    "Other analyst": 0.11165585483244148,
+    "IT Support & Security": 0.10986218648171953,
+    "Operations & Supply Chain": 0.021464231263639354,
+    "Lab & Quality": 0.018624256374996262,
+    "Marketing & Sales": 0.014588502585871872,
+    "Policy & Research": 0.014229768915727482
   },
   "role_family_median": {
     "Data & BI": {
@@ -57,11 +84,11 @@
     },
     "Business & Systems": {
       "median": 90840.75,
-      "n": 948
+      "n": 950
     },
     "Financial": {
-      "median": 87823.2,
-      "n": 1202
+      "median": 87838.4,
+      "n": 1203
     },
     "Lab & Quality": {
       "median": 87137.5,
@@ -76,8 +103,8 @@
       "n": 346
     },
     "IT Support & Security": {
-      "median": 77198.0,
-      "n": 436
+      "median": 76960.0,
+      "n": 437
     },
     "Marketing & Sales": {
       "median": 70000.0,
@@ -87,7 +114,7 @@
   "province_median": {
     "ON": {
       "median": 90840.75,
-      "n": 2012
+      "n": 2015
     },
     "NS": {
       "median": 90840.75,
@@ -115,7 +142,7 @@
     },
     "QC": {
       "median": 78000.0,
-      "n": 772
+      "n": 773
     }
   },
   "seniority_median": {
@@ -133,10 +160,96 @@
     },
     "Mid": {
       "median": 84192.0,
-      "n": 2850
+      "n": 2854
+    }
+  },
+  "yearly": {
+    "window": "Jan\u2013Sep",
+    "years": {
+      "2024": {
+        "postings": 14490,
+        "all_postings": 977148,
+        "salary_coverage": 0.29496204278812976,
+        "median_salary": 75903.75,
+        "direct_median_salary": 76440.0,
+        "direct_salaried": 1765,
+        "role_family_share": {
+          "Financial": 0.3047619047619048,
+          "Business & Systems": 0.2800552104899931,
+          "Data & BI": 0.1344375431331953,
+          "IT Support & Security": 0.12084195997239476,
+          "Other analyst": 0.09737750172532782,
+          "Lab & Quality": 0.02091097308488613,
+          "Operations & Supply Chain": 0.016908212560386472,
+          "Marketing & Sales": 0.012974465148378193,
+          "Policy & Research": 0.011732229123533472
+        }
+      },
+      "2025": {
+        "postings": 8948,
+        "all_postings": 665103,
+        "salary_coverage": 0.35493965131873045,
+        "median_salary": 84597.5,
+        "direct_median_salary": 78000.0,
+        "direct_salaried": 917,
+        "role_family_share": {
+          "Financial": 0.29872597228430936,
+          "Business & Systems": 0.25491729995529727,
+          "Other analyst": 0.1371256146624944,
+          "Data & BI": 0.135225748770675,
+          "IT Support & Security": 0.10315154224407688,
+          "Operations & Supply Chain": 0.027045149754135002,
+          "Lab & Quality": 0.016204738489047833,
+          "Policy & Research": 0.014081358962896737,
+          "Marketing & Sales": 0.013522574877067501
+        }
+      },
+      "2026": {
+        "postings": 3985,
+        "all_postings": 461934,
+        "salary_coverage": 0.9872020075282308,
+        "median_salary": 88270.0,
+        "direct_median_salary": 78000.0,
+        "direct_salaried": 700,
+        "role_family_share": {
+          "Financial": 0.3074027603513174,
+          "Business & Systems": 0.2396486825595985,
+          "Data & BI": 0.17038895859473024,
+          "IT Support & Security": 0.11016311166875785,
+          "Other analyst": 0.08858218318695106,
+          "Policy & Research": 0.027101631116687577,
+          "Operations & Supply Chain": 0.024843161856963614,
+          "Marketing & Sales": 0.02082810539523212,
+          "Lab & Quality": 0.011041405269761606
+        }
+      }
     }
   },
   "monthly_postings": {
+    "2024-01": 1629,
+    "2024-02": 1669,
+    "2024-03": 2181,
+    "2024-04": 1551,
+    "2024-05": 1462,
+    "2024-06": 1679,
+    "2024-07": 1358,
+    "2024-08": 1521,
+    "2024-09": 1440,
+    "2024-10": 1650,
+    "2024-11": 1537,
+    "2024-12": 1130,
+    "2025-01": 1732,
+    "2025-02": 1588,
+    "2025-03": 1312,
+    "2025-04": 742,
+    "2025-05": 961,
+    "2025-06": 880,
+    "2025-07": 668,
+    "2025-08": 487,
+    "2025-09": 578,
+    "2025-10": 672,
+    "2025-11": 486,
+    "2025-12": 549,
     "2026-01": 585,
     "2026-02": 577,
     "2026-03": 516,
@@ -148,9 +261,42 @@
     "2026-09": 412
   },
   "live_scrape": {
-    "postings": 0
+    "postings": 4,
+    "first_date": "2026-10-22",
+    "last_date": "2026-10-22",
+    "work_arrangement_share": {
+      "On site": 1.0
+    },
+    "postings_listing_tools": 1,
+    "tool_share": {
+      "Zoho CRM": 1.0
+    }
   },
   "all_postings_monthly": {
+    "2024-01": 111046,
+    "2024-02": 107554,
+    "2024-03": 122476,
+    "2024-04": 105549,
+    "2024-05": 112564,
+    "2024-06": 102939,
+    "2024-07": 95790,
+    "2024-08": 114076,
+    "2024-09": 105154,
+    "2024-10": 151826,
+    "2024-11": 93603,
+    "2024-12": 71912,
+    "2025-01": 101570,
+    "2025-02": 94240,
+    "2025-03": 87785,
+    "2025-04": 68653,
+    "2025-05": 70284,
+    "2025-06": 68793,
+    "2025-07": 58692,
+    "2025-08": 56776,
+    "2025-09": 58310,
+    "2025-10": 53724,
+    "2025-11": 42191,
+    "2025-12": 38075,
     "2026-01": 51178,
     "2026-02": 44176,
     "2026-03": 49746,
@@ -162,7 +308,7 @@
     "2026-09": 52368
   },
   "posting_source_share": {
-    "External job board": 0.8233375156838143,
-    "Job Bank direct": 0.1766624843161857
+    "External job board": 0.8781800245134674,
+    "Job Bank direct": 0.12181997548653253
   }
 }

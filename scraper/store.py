@@ -13,7 +13,7 @@ from pathlib import Path
 import pandas as pd
 
 POSTING_COLUMNS = [
-    "job_number", "url", "title", "employer", "city", "province", "posted_date", "work_arrangement",
+    "job_number", "url", "title", "standard_title", "employer", "city", "province", "posted_date", "work_arrangement",
     "salary_min", "salary_max", "salary_per", "salary_text", "hours_min", "hours_max", "hours_per",
     "education", "experience", "noc_code", "source", "n_skills", "scraped_on",
 ]

@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+*.csv
+.venv/
+.idea/
+.vscode/
+.ipynb_checkpoints/
+.pytest_cache/
+
+# Power BI temp/cache
+/powerbi/
+!/powerbi/canada-analyst-market.pbix
+
+# raw pages from `python -m scraper --save-html`
+data/scraped/html/

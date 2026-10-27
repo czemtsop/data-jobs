@@ -3,6 +3,9 @@
 Two CSVs under data/scraped/:
   postings.csv  one row per Job Bank job number (latest scrape wins)
   skills.csv    one row per (job_number, skill) from "Computer and technology knowledge"
+
+plus seen_ids.txt: every posting ID fetched so far, including the non-analyst ones
+the title filter dropped, so they aren't fetched again.
 """
 
 from __future__ import annotations
@@ -17,6 +20,7 @@ POSTING_COLUMNS = [
     "salary_min", "salary_max", "salary_per", "salary_text", "hours_min", "hours_max", "hours_per",
     "education", "experience", "noc_code", "source", "n_skills", "scraped_on",
 ]
+SEEN_FILE = "seen_ids.txt"
 
 
 def load(path: Path) -> pd.DataFrame:
@@ -24,8 +28,23 @@ def load(path: Path) -> pd.DataFrame:
 
 
 def known_ids(store_dir: Path) -> set[str]:
+    """Every posting already fetched: the stored analyst postings plus the ones the title filter dropped."""
     df = load(store_dir / "postings.csv")
-    return set(df["job_number"]) if len(df) else set()
+    seen = set(df["job_number"]) if len(df) else set()
+    path = store_dir / SEEN_FILE
+    if path.exists():
+        seen |= {line.strip() for line in path.read_text().splitlines() if line.strip()}
+    return seen
+
+
+def mark_seen(ids: list[str], store_dir: Path) -> None:
+    """Remember fetched posting IDs, kept or not, so later runs don't fetch them again."""
+    if not ids:
+        return
+    store_dir.mkdir(parents=True, exist_ok=True)
+    path = store_dir / SEEN_FILE
+    old = set(path.read_text().split()) if path.exists() else set()
+    path.write_text("\n".join(sorted(old | set(ids), key=int)) + "\n")
 
 
 def save(records: list[dict], store_dir: Path) -> tuple[int, int]:

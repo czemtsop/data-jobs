@@ -143,6 +143,9 @@ def transform(raw: pd.DataFrame, cfg: dict) -> pd.DataFrame:
     # on-site / hybrid / remote is only on the live posting pages
     arrangement = df["work_arrangement"] if "work_arrangement" in df else pd.Series(pd.NA, index=df.index)
     df["work_arrangement"] = arrangement.where(scraped).fillna("Not captured")
+    # open-data IDs aren't Job Bank posting numbers, so only scraped postings get a link
+    url = df["posting_url"] if "posting_url" in df else pd.Series(pd.NA, index=df.index)
+    df["posting_url"] = url.where(scraped)
     df["noc_code"] = df["noc_code"].astype("string").str.extract(r"(\d{4,5})", expand=False)
     df["city"] = df["city"].fillna("").str.strip().str.title().replace("", np.nan)
     return df.reset_index(drop=True)

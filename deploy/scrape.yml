@@ -18,7 +18,7 @@ concurrency:
 jobs:
   scrape:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90      # ~15 min of search pages + up to 400 postings at 5 s each
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6

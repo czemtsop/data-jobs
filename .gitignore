@@ -1,5 +1,6 @@
 __pycache__/
 *.pyc
+*.csv
 .venv/
 .idea/
 .vscode/
@@ -7,11 +8,8 @@ __pycache__/
 .pytest_cache/
 
 # Power BI temp/cache
-*.pbix.bak
-.pbi/
+/powerbi/
+!/powerbi/canada-analyst-market.pbix
 
 # raw pages from `python -m scraper --save-html`
 data/scraped/html/
-
-# monthly open-data CSVs (~45 MB each): `python -m pipeline download`
-data/job-bank/

@@ -12,7 +12,7 @@ FACT_COLUMNS = [
     "posting_id", "posted_date", "province_code", "city", "title", "role_family", "seniority",
     "noc_code", "noc_name", "data_source", "posting_source", "work_arrangement", "economic_region", "hours_per_week", "employment_type", "employment_term", "vacancies",
     "salary_min_annual", "salary_max_annual", "salary_mid_annual", "salary_period", "has_salary",
-    "source_file",
+    "source_file", "posting_url",
 ]
 
 

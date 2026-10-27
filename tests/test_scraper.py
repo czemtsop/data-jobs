@@ -70,3 +70,30 @@ def test_store_merges(tmp_path):
     r2 = {**r, "skills": ["SQL", "Python"]}
     assert store.save([r2], tmp_path) == (1, 2)     # re-scrape replaces, doesn't duplicate
     assert store.known_ids(tmp_path) == {"1"}
+
+
+def test_search_dates():
+    res = parse.parse_search_dates((FIX / "search_analyst.html").read_bytes())
+    assert list(res) == parse.parse_search((FIX / "search_analyst.html").read_bytes())
+    assert set(res.values()) == {"2026-10-22"}
+
+
+def test_seen_ids_include_dropped_postings(tmp_path):
+    store.save([_posting("posting_50559745_direct.html", "1")], tmp_path)
+    store.mark_seen(["1", "7", "12"], tmp_path)
+    store.mark_seen(["7"], tmp_path)
+    assert store.known_ids(tmp_path) == {"1", "7", "12"}
+    assert (tmp_path / store.SEEN_FILE).read_text() == "1\n7\n12\n"
+
+
+def test_scrape_since(tmp_path):
+    from datetime import date
+
+    from scraper.__main__ import scrape_since
+
+    for name in ["job-bank-open-data-all-job-postings-en-sept2026.csv",
+                 "job-bank-open-data-all-job-postings-en-december2025.csv"]:
+        (tmp_path / name).touch()
+    assert scrape_since(tmp_path, "*.csv") == date(2026, 10, 1)
+    (tmp_path / "job-bank-open-data-all-job-postings-en-december2026.csv").touch()
+    assert scrape_since(tmp_path, "*.csv") == date(2027, 1, 1)

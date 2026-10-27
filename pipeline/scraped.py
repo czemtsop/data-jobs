@@ -50,6 +50,7 @@ def load_scraped(store_dir: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
         "external": d["source"].fillna("").str.contains("Job Bank", case=False).map({True: "0", False: "1"}),
         "work_arrangement": d["work_arrangement"],
         "source_file": "jobbank.gc.ca scrape",
+        "posting_url": d["url"] if "url" in d else pd.NA,
     })
     skills = pd.read_csv(s, dtype=str) if s.exists() else pd.DataFrame(columns=["job_number", "skill"])
     skills = pd.DataFrame({"posting_id": "JB-" + skills["job_number"], "skill": skills["skill"].map(normalize_skill)})

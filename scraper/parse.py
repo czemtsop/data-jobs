@@ -73,6 +73,19 @@ def parse_search(html: str | bytes) -> list[str]:
     return ids
 
 
+def parse_search_dates(html: str | bytes) -> dict[str, str | None]:
+    """{posting ID: posted date (YYYY-MM-DD) or None} for each result, in page order."""
+    soup = _soup(html)
+    out: dict[str, str | None] = {}
+    for a in soup.find_all("a", href=True):
+        m = POSTING_LINK.search(a["href"])
+        if not m or m.group(1) in out:
+            continue
+        li = a.find("li", class_="date")
+        out[m.group(1)] = _to_iso(li.get_text(" ")) if li else None
+    return out
+
+
 # ---------------------------------------------------------------- posting pages
 
 def _prop(soup: BeautifulSoup | Tag, name: str) -> Tag | None:
@@ -159,7 +172,12 @@ def _hours(soup: BeautifulSoup) -> dict:
 
 
 def _posted_date(soup: BeautifulSoup) -> str | None:
-    m = re.search(r"[A-Z][a-z]+ \d{1,2}, \d{4}|\d{4}-\d{2}-\d{2}", _prop_text(soup, "datePosted") or "")
+    return _to_iso(_prop_text(soup, "datePosted") or "")
+
+
+def _to_iso(text: str) -> str | None:
+    """'October 22, 2026' or '2026-10-22' anywhere in text -> '2026-10-22'."""
+    m = re.search(r"[A-Z][a-z]+ \d{1,2}, \d{4}|\d{4}-\d{2}-\d{2}", text)
     if not m:
         return None
     for fmt in ("%B %d, %Y", "%Y-%m-%d"):

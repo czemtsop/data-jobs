@@ -23,7 +23,7 @@ Two sources from the same job board, combined so the dashboard is current and ha
 
 The two use different IDs and can't be matched row by row, so a scraped posting is only kept if it was first posted after the latest open-data date. When the next monthly file is published, those weeks switch over to the official data automatically.
 
-**Scraping etiquette.** jobbank.gc.ca's robots.txt allows crawling with a 5-second delay; the scraper waits at least that long between requests, identifies itself with a project user-agent, and stops paging once it reaches postings it has already stored.
+**Scraping etiquette.** jobbank.gc.ca's robots.txt allows crawling with a 5-second delay; the scraper waits at least that long between requests, identifies itself with a project user-agent, and stops paging once results are older than the day after the latest open-data month. It also remembers every posting it has opened, including the non-analyst ones it drops, so none are fetched twice.
 
 ### Monthly open data
 
@@ -48,7 +48,7 @@ The two use different IDs and can't be matched row by row, so a scraped posting 
 - The scraper reads fields by their visible labels on the page; if Job Bank redesigns its pages, the run logs field coverage and refuses to save when titles go missing.
 - The changes in salaries and the number of job postings might say more about job bank's data collection methods than about real trends in the job market.
 
-## Approa
+## Approach
 
 ```
 jobbank.gc.ca ─► scraper/ (requests + BeautifulSoup) ─► data/scraped/ ─┐
@@ -75,17 +75,15 @@ Job Bank monthly CSVs (data/job-bank/) ─────────────�
 1. **Analyst demand shrank.** Jan–Sep analyst postings fell 72%, from 14,490 in 2024 to 3,985 in 2026, while all Job Bank postings fell 53%; analysts went from 1.5% to 0.9% of all postings.
 2. **Advertised pay was flat.** Postings made directly on Job Bank, which always list a salary, had a median of $76K in Jan–Sep 2024 and $78K in 2026 (n=1,765 and 700). The median across all postings rose 16%, but mostly because the share listing a salary went from 29% to 99%.
 3. **The mix moved toward data roles.** Data & BI went from 13% of analyst postings in 2024 to 17% in 2026; Financial analysts are still the largest group at 31%.
-4. **Financial analysts are the largest group** at 31% of postings; Data & BI roles are 17%.
-5. **The kind of analyst matters for pay.** Data & BI postings in 2026 advertise a median $92K (n=672), 32% more than Marketing & Sales at $70K (n=81).
-6. **Demand is concentrated.** Ontario and Quebec account for 71% of the 3,985 analyst postings (Ontario alone 52       │7 tests/generated.
-7. **Pay differs between the two biggest markets.** The median in 2026 is $91K in Ontario versus $78K in Quebec, 14% lower (national median $88K).
+4. **The kind of analyst matters for pay.** Policy & Research postings in 2026 advertise a median $94K (n=112), 34% more than Marketing & Sales at $70K (n=83).
+5. **Pay differs between the two biggest markets.** The median in 2026 is $91K in Ontario versus $78K in Quebec, 15% lower (national median $88K).
 
-<sub>Job Bank postings with an analyst title, first posted 2024-01-01 to 2026-10-22 (34 months). Includes 4 postings scraped from jobbank.gc.ca after the latest monthly file. Salaries are advertised ranges converted to annual CAD (midpoint). Year-over-year comparisons use the same months (Jan–Sep) in each year. Pay rankings use 2026 only, when 99% of postings list a salary (42% across the whole period). Medians are only compared for groups with at least 30 salaried postings.</sub>
+<sub>Job Bank postings with an analyst title, first posted 2024-01-01 to 2026-10-26 (34 months). Includes 157 postings scraped from jobbank.gc.ca after the latest monthly file. Salaries are advertised ranges converted to annual CAD (midpoint). Year-over-year comparisons use the same months (Jan–Sep) in each year. Pay rankings use 2026 only, when 99% of postings list a salary (42% across the whole period). Medians are only compared for groups with at least 30 salaried postings.</sub>
 <!-- FINDINGS:END -->
 
 ## Dashboard
 
-![Canadian Analyst Job Market dashboard](docs/dashboard.png)
+![Canadian Analyst Job Market dashboard](data/dashboard.png)
 
 Built in Power BI Desktop — [`powerbi/canada-analyst-market.pbix`](powerbi/). Two pages: the market overview (filters by month, province, role family, seniority, posting source and data source) and *Right now* (tools and work arrangement from the live scrape).
 
@@ -118,7 +116,7 @@ uv sync
    uv run python -m pipeline run
    ```
    Writes `data/model/*.csv`, `data/model/findings.json`, and refreshes the Findings section above.
-5. **Open the report.** Open `powerbi/canada-analyst-market.pbix` and click **Refresh**, or build it from scratch with [`powerbi/BUILD.md`](powerbi/BUILD.md).
+5. **Open the report.** Open `powerbi/canada-analyst-market.pbix` and click **Refresh**.
 6. **Tests:** `uv run pytest`
 
 ```
@@ -127,13 +125,9 @@ scraper/             fetch (polite client) → parse (BeautifulSoup) → store
 pipeline/            load → transform → model → findings
 deploy/scrape.yml    daily GitHub Actions run (move into .github/workflows/ to enable)
 data/scraped/        scraped postings and their tools (grows daily)
-powerbi/             BUILD.md, measures.dax, theme.json, .pbix
+powerbi/             .pbix
 data/job-bank/       Job Bank monthly CSVs, Jan 2024 – Sep 2026 (~1.9 GB, downloaded, not in git)
 data/model/          star-schema CSVs Power BI reads (committed)
-docs/                dashboard image
-archive/v1-remote-jobs/  the original 2025 remote-jobs scraper (RemoteOK / Jobicy)
 ```
-
----
 
 Licensed under GPL-3.0. Job Bank data © Government of Canada, used under the Open Government Licence – Canada.

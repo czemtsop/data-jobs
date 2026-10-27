@@ -66,6 +66,6 @@ findings:
 scrape:
   store_dir: data/scraped
   queries: ["analyst", "analyste"]
-  max_pages_per_query: 40        # 25 results per page, newest first; stops early once caught up
+  max_pages_per_query: 100       # 25 results per page, newest first; stops at the day after the open data ends
   max_postings_per_run: 400      # ~35 min at the 5 s crawl delay
   delay_seconds: 5               # robots.txt Crawl-delay
